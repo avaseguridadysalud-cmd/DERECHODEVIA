@@ -4,1752 +4,1115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DmV Control v3.0 | SGO Enterprise</title>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap"
+    <title>DmV Control v3.0 (LOCAL VERSION)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
         rel="stylesheet">
     <style>
+        /* Estilos Core Actualizados */
         :root {
-            /* Palette: Slate & Blue & Emerald */
             --bg-primary: #0f172a;
             --bg-secondary: #1e293b;
-            --bg-glass: rgba(30, 41, 59, 0.75);
-            --border-color: rgba(255, 255, 255, 0.08);
-
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --text-tertiary: #64748b;
-
-            /* Brand Colors */
-            --brand-primary: #3b82f6;
-            /* Blue 500 */
-            --brand-hover: #2563eb;
-            /* Blue 600 */
-            --brand-glow: rgba(59, 130, 246, 0.5);
-
-            /* Status Colors */
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --info: #0ea5e9;
-
-            /* UI Tokens */
-            --radius-sm: 6px;
-            --radius-md: 12px;
-            --radius-lg: 20px;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-glow: 0 0 15px var(--brand-glow);
-
-            --font-main: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        * {
-            box-sizing: border-box;
-            outline: none;
-            -webkit-tap-highlight-color: transparent;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --bg-input: rgba(15, 23, 42, 0.6);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent-primary: #38bdf8;
+            --accent-secondary: #818cf8;
+            --accent-tertiary: #c084fc;
+            --accent-success: #4ade80;
+            --accent-warning: #fbbf24;
+            --accent-danger: #f87171;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 24px;
+            --shadow-premium: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --font-main: 'IBM Plex Sans', sans-serif;
         }
 
         body {
             font-family: var(--font-main);
-            background-color: var(--bg-primary);
+            background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
             color: var(--text-primary);
-            margin: 0;
-            overflow: hidden;
-            height: 100vh;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* --- Animations --- */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        /* Scrollbar Personalizada */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
 
-        .fade-in {
-            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
         }
 
-        /* --- Layout --- */
-        #app-shell {
-            display: flex;
-            height: 100vh;
-            width: 100vw;
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
         }
 
-        .sidebar {
-            width: 260px;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            z-index: 20;
-            transition: transform 0.3s ease;
-        }
-
-        .main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            background: radial-gradient(circle at 80% 10%, #1e293b 0%, #0f172a 60%);
-            overflow: hidden;
-        }
-
-        .topbar {
-            height: 64px;
-            padding: 0 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+        /* Panel de Configuración Local */
+        .config-banner {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 8px 20px;
             border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .config-banner span {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .config-banner input {
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            width: 280px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-input);
+            color: #fff;
+            transition: var(--transition);
+        }
+
+        /* Login Box Upgrade */
+        .login-box {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            padding: 40px;
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            margin: -60px auto 0;
+            position: relative;
             z-index: 10;
         }
 
-        .topbar-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            letter-spacing: -0.01em;
-            color: var(--text-primary);
-        }
 
-        .network-status {
-            font-size: 0.75rem;
-            font-weight: 500;
-            padding: 4px 8px;
-            border-radius: var(--radius-sm);
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-secondary);
+
+        .pin-container {
             display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .network-status.online {
-            color: var(--success);
-            background: rgba(16, 185, 129, 0.1);
-        }
-
-        .network-status.offline {
-            color: var(--text-tertiary);
-            background: rgba(148, 163, 184, 0.1);
-        }
-
-        .content {
-            flex: 1;
-            padding: 24px;
-            overflow-y: auto;
-            scroll-behavior: smooth;
-        }
-
-        .content::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .content::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-        }
-
-        /* --- Typography & Cards --- */
-        h1,
-        h2,
-        h3,
-        h4 {
-            margin: 0;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        h3 {
-            font-size: 1.25rem;
-            margin-bottom: 0.5rem;
-        }
-
-        p {
-            color: var(--text-secondary);
-            line-height: 1.5;
-            font-size: 0.95rem;
-        }
-
-        .card {
-            background: var(--bg-glass);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow-sm);
-            backdrop-filter: blur(8px);
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 12px;
-        }
-
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        /* --- Forms --- */
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .form-input,
-        .form-select,
-        .form-textarea {
-            width: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            padding: 10px 12px;
-            color: var(--text-primary);
-            font-family: var(--font-main);
-            font-size: 0.95rem;
-            transition: all 0.2s;
-        }
-
-        .form-input:focus,
-        .form-select:focus,
-        .form-textarea:focus {
-            border-color: var(--brand-primary);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-            background: rgba(15, 23, 42, 0.9);
-        }
-
-        /* --- Buttons --- */
-        .btn {
-            display: inline-flex;
-            align-items: center;
             justify-content: center;
-            padding: 10px 20px;
-            border-radius: var(--radius-sm);
-            border: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            gap: 8px;
-            text-decoration: none;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-block {
-            width: 100%;
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 0.8rem;
-        }
-
-        .btn-primary {
-            background: var(--brand-primary);
-            color: white;
-            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn-primary:hover {
-            background: var(--brand-hover);
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.5);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.15);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-        }
-
-        .btn-danger:hover {
-            background: rgba(239, 68, 68, 0.25);
-            color: #fecaca;
-        }
-
-        /* --- Badges & Status --- */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 2px 8px;
-            border-radius: 99px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 0.02em;
-        }
-
-        .badge-green {
-            background: rgba(16, 185, 129, 0.15);
-            color: #6ee7b7;
-            border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-
-        .badge-orange {
-            background: rgba(245, 158, 11, 0.15);
-            color: #fcd34d;
-            border: 1px solid rgba(245, 158, 11, 0.2);
-        }
-
-        .badge-gray {
-            background: rgba(148, 163, 184, 0.15);
-            color: #cbd5e1;
-            border: 1px solid rgba(148, 163, 184, 0.2);
-        }
-
-        /* --- Login Screen --- */
-        .screen-full {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2670&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
-        }
-
-        .screen-full::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(4px);
-        }
-
-        .glass-box {
-            position: relative;
-            background: rgba(30, 41, 59, 0.65);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 40px;
-            border-radius: 24px;
-            width: 100%;
-            max-width: 380px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            text-align: center;
-        }
-
-        .pin-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
             gap: 12px;
             margin: 30px 0;
         }
 
         .pin-digit {
-            width: 100%;
-            height: 64px;
-            background: rgba(15, 23, 42, 0.5);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            color: white;
-            font-size: 24px;
+            width: 56px;
+            height: 72px;
             text-align: center;
-            transition: all 0.2s;
+            font-size: 2rem;
+            font-family: var(--font-mono);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-input);
+            transition: var(--transition);
         }
 
         .pin-digit:focus {
-            border-color: var(--brand-primary);
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
-            transform: translateY(-2px);
+            border-color: var(--accent-primary);
+            outline: none;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
         }
 
-        /* --- Stats Grid --- */
-        .grid-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        /* --- Tables --- */
-        .table-wrap {
-            overflow-x: auto;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-
-        .table th {
-            background: rgba(255, 255, 255, 0.03);
-            text-align: left;
-            padding: 12px;
-            color: var(--text-secondary);
-            font-weight: 500;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .table td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-primary);
-        }
-
-        .table tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* --- Mobile Navigation --- */
-        .nav-item {
-            padding: 12px 16px;
-            margin: 4px 12px;
-            border-radius: var(--radius-sm);
-            color: var(--text-secondary);
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 28px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
             cursor: pointer;
-            transition: 0.2s;
-            font-weight: 500;
+            transition: var(--transition);
+            font-size: 1rem;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* App Shell */
+        #app-shell {
+            display: none;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #0f172a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .sidebar-header {
+            padding: 32px 24px;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent);
+        }
+
+        .sidebar-nav {
+            padding: 8px 0;
+            flex: 1;
+        }
+
+        .nav-item {
+            padding: 14px 24px;
+            color: #94a3b8;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 14px;
+            transition: var(--transition);
+            font-weight: 500;
         }
 
         .nav-item:hover {
+            color: white;
             background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
         }
 
         .nav-item.active {
-            background: rgba(59, 130, 246, 0.15);
-            color: var(--brand-primary);
-            font-weight: 600;
+            color: white;
+            background: var(--accent-primary);
+            box-shadow: var(--shadow-md);
         }
 
-        /* --- Alert Strips --- */
-        .alert-strip {
-            padding: 12px;
-            border-radius: var(--radius-sm);
-            margin-bottom: 16px;
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .topbar {
+            background: white;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
+        }
+
+        .page-content {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+            background: var(--bg-primary);
+        }
+
+        /* Tarjetas de Estadísticas */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent-primary);
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* Tablas Premium */
+        .table-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .table-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .premium-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .premium-table th {
+            background: #f8fafc;
+            padding: 16px 24px;
+            text-align: left;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .premium-table td {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
             font-size: 0.9rem;
-            border-left: 4px solid;
-            background: rgba(255, 255, 255, 0.02);
         }
 
-        .alert-strip.text-blue {
-            border-color: var(--info);
-            color: #bae6fd;
-            background: rgba(14, 165, 233, 0.1);
+        .premium-table tr:last-child td {
+            border-bottom: none;
         }
 
-        .alert-strip.text-red {
-            border-color: var(--danger);
-            color: #fecaca;
-            background: rgba(239, 68, 68, 0.1);
+        .premium-table tr:hover td {
+            background: #fdfdfd;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-warning {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toast {
+            background: white;
+            padding: 18px 28px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-premium);
+            border-left: 6px solid var(--accent-primary);
+            color: var(--text-primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(40px) scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
         }
 
         .hidden {
             display: none !important;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <script>
-        // CONFIGURACIÓN HEADLESS - ACTUALIZADA POR EL USUARIO
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyVP0gTvGDD35uKVUGKdAG3RufPW6ea1OmErCyU-bcRQxXynU-Mm0a6co8NX7b03TwpbA/exec';
-        const SPREADSHEET_ID = '14dnLZDpVTiBePINCT0sUefubzeJVryppqt-rTTYuUp0';
-    </script>
+    <!-- Panel de Configuración Local -->
+    <div class="config-banner" id="configPanel">
+        <span>⚙️ Configuración:</span>
+        <input type="text" id="gasUrl" placeholder="URL del Web App (GAS)...">
+        <input type="text" id="sheetId" placeholder="ID del Google Sheet (Opcional)...">
+        <button class="btn btn-primary" style="width: auto; padding: 6px 15px; font-size: 0.75rem;"
+            onclick="saveConfig()">Guardar Ajustes</button>
+    </div>
 
-    <div id="screen-login" class="screen-full">
-        <div class="glass-box" style="text-align:center">
-            <h1 style="margin-bottom:8px">SGO DMV v3.0</h1>
-            <p style="color:var(--text-dim); font-size:0.9rem">Gestión de Derecho de Vía · GENCO</p>
-            <div class="pin-grid">
-                <input type="password" maxlength="1" class="pin-digit" inputmode="numeric">
-                <input type="password" maxlength="1" class="pin-digit" inputmode="numeric">
-                <input type="password" maxlength="1" class="pin-digit" inputmode="numeric">
-                <input type="password" maxlength="1" class="pin-digit" inputmode="numeric">
+    <div id="loading" class="loading-overlay hidden">
+        <div style="text-align: center;">
+            <div
+                style="width: 40px; height: 40px; border: 3px solid #ddd; border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite;">
             </div>
-            <button class="btn btn-primary btn-block" id="btnLogin">INGRESAR</button>
-            <div id="loginError" style="color:var(--danger); font-size:0.8rem; margin-top:10px"></div>
+            <p style="margin-top: 10px; font-size: 0.9rem; color: var(--text-secondary);">Conectando con el servidor...
+            </p>
         </div>
     </div>
 
-    <div id="app-shell" class="hidden">
-        <aside class="sidebar" id="sidebar">
-            <div style="padding:24px; border-bottom:1px solid var(--border-color)">
-                <h2 style="color:var(--accent)">DmV <span style="font-weight:300; color:#fff">Control</span></h2>
-                <div id="folioPrefix" style="font-size:0.65rem; color:var(--text-dim); margin-top:4px">GC-OP-DMV-000
+    <!-- Pantalla de Login -->
+    <div id="screen-login">
+        <div class="login-banner">
+            <div class="login-banner-content">
+                <h1>DmV Control v3.0</h1>
+                <p>Versión Local con Base de Datos Remota</p>
+            </div>
+        </div>
+        <div class="login-box">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="https://lh3.googleusercontent.com/d/1A0myW1PD0JIuutflbCgT_l0YbweG_UO1" alt="GENCO"
+                    style="height: 60px;">
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 10px;">Ingrese su PIN de 4 dígitos
+                </p>
+            </div>
+            <div class="pin-container">
+                <input type="password" class="pin-digit" maxlength="1" inputmode="numeric" data-pin="0">
+                <input type="password" class="pin-digit" maxlength="1" inputmode="numeric" data-pin="1">
+                <input type="password" class="pin-digit" maxlength="1" inputmode="numeric" data-pin="2">
+                <input type="password" class="pin-digit" maxlength="1" inputmode="numeric" data-pin="3">
+            </div>
+            <div id="loginError"
+                style="color: #c62828; font-size: 0.8rem; text-align: center; margin-bottom: 15px; min-height: 1.2em;">
+            </div>
+            <button class="btn btn-primary" id="btnLogin">Ingresar</button>
+        </div>
+    </div>
+
+    <!-- App Shell -->
+    <div id="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div style="font-weight: 800; font-size: 1.4rem; letter-spacing: -0.05em;">DmV Control <span
+                        style="color: var(--accent-primary);">v3</span></div>
+                <div style="font-size: 0.75rem; color: #64748b; font-weight: 500; margin-top: 4px;">GENCO • SASISOPA
                 </div>
             </div>
-            <nav id="sidebarNav" style="flex:1; padding:10px 0; overflow-y:auto"></nav>
-            <div style="padding:20px; border-top:1px solid var(--border-color)">
-                <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px">
-                    <div id="userAvatar"
-                        style="width:40px; height:40px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700">
-                        --</div>
-                    <div>
-                        <div id="userName" style="font-weight:700; font-size:0.9rem">--</div>
-                        <div id="userRole" style="font-size:0.7rem; color:var(--accent)">ADMIN</div>
-                    </div>
+            <nav class="sidebar-nav" id="sidebarNav">
+                <div class="nav-item active" onclick="navigate('dashboard')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Dashboard
                 </div>
-                <button class="btn btn-danger btn-block" onclick="location.reload()">CERRAR SESIÓN</button>
+                <div class="nav-item" onclick="navigate('actividades')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    Actividades
+                </div>
+                <div class="nav-item" onclick="navigate('alta-personal')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="8.5" cy="7" r="4"></circle>
+                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                    Alta Personal
+                </div>
+            </nav>
+            <div style="padding: 24px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <button class="btn"
+                    style="background: rgba(255,255,255,0.05); color: #94a3b8; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); width: 100%;"
+                    onclick="logout()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="margin-right: 8px;">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Cerrar Sesión
+                </button>
             </div>
         </aside>
 
-        <main class="main">
+        <main class="main-content">
             <header class="topbar">
-                <button onclick="document.getElementById('sidebar').classList.toggle('open')"
-                    style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer">☰</button>
-                <img id="headerLogo" style="height:32px; margin:0 12px; display:none; border-radius:4px" alt="Logo">
-                <h3 id="topbarTitle">Dashboard</h3>
-                <div id="topbarDate" style="font-size:0.8rem; color:var(--text-dim)"></div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div id="topbarTitle" style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary);">
+                        Dashboard</div>
+                </div>
+                <div id="userInfo"
+                    style="display: flex; align-items: center; gap: 12px; font-weight: 500; font-size: 0.9rem; color: var(--text-secondary);">
+                </div>
             </header>
-            <div class="content" id="pageContent"></div>
+            <div class="page-content" id="pageContent"></div>
         </main>
     </div>
 
     <div class="toast-container" id="toastContainer"></div>
 
-    <div id="modal-overlay">
-        <div class="modal-box" id="modalContent"></div>
-    </div>
-
     <script>
-        /* ================================================================
-           SEED DATA & FULL CATALOGS (from index_FINAL.txt)
-           ================================================================ */
-        const DB = {
-            usuarios: [], tramos: [], actividades: [], personalCampo: [], planTrabajo: [], hallazgos: [], ast: [], incidentes: [],
-            sasisopa: [
-                { id: 'S01', elemento: 'Política de seguridad' }, { id: 'S02', elemento: 'Identificación de peligros' },
-                { id: 'S03', elemento: 'Marco normativo' }, { id: 'S04', elemento: 'Competencia del personal' },
-                { id: 'S07', elemento: 'Procedimientos operativos' }, { id: 'S09', elemento: 'Respuesta a emergencias' },
-                { id: 'S10', elemento: 'Monitoreo y evaluación' }, { id: 'S12', elemento: 'Investigación incidentes' },
-                { id: 'S14', elemento: 'Información y documentación' }
-            ],
-            nomMatriz: [
-                { id: 'N1', nom: 'NOM-020-ASEA-2016', titulo: 'Transporte de gas por ducto (DmV)' },
-                { id: 'N2', nom: 'NOM-017-STPS-2008', titulo: 'Equipo de Protección Personal' },
-                { id: 'N3', nom: 'NOM-030-STPS-2009', titulo: 'Servicios de Salud Preventivos' }
-            ],
-            eppCatalogo: {
-                'Supervisor': ['Casco blanco', 'Lentes de seguridad', 'Botas dieléctricas', 'Chaleco alta visibilidad', 'Radio'],
-                'Lider': ['Casco naranja', 'Lentes', 'Guantes de carnaza', 'Botas de seguridad', 'Chaleco'],
-                'Ayudante': ['Casco amarillo', 'Lentes', 'Guantes de hule/carnaza', 'Botas', 'Chaleco'],
-                'Segurista': ['Casco azul', 'Lentes', 'Detector de gas', 'Botiquín', 'Chaleco r-reflectante']
-            },
-            indicadores: { pctAvance: 0, kmEjec: 0, hallAbiertos: 0, actEnCurso: 0, foliosHoy: 0 }
+        let CONFIG = {
+            url: localStorage.getItem('gas_url') || '',
+            sheetId: localStorage.getItem('sheet_id') || '',
+            user: null,
+            db: {}
         };
 
+        function saveConfig() {
+            const urlVal = document.getElementById('gasUrl').value.trim();
+            const idVal = document.getElementById('sheetId').value.trim();
+            if (urlVal) {
+                localStorage.setItem('gas_url', urlVal);
+                localStorage.setItem('sheet_id', idVal);
+                toast("Configuración guardada.");
+                setTimeout(() => location.reload(), 800);
+            } else {
+                toast("La URL del Web App es necesaria", "error");
+            }
+        }
+
+        window.onload = () => {
+            if (CONFIG.url) document.getElementById('gasUrl').value = CONFIG.url;
+            if (CONFIG.sheetId) document.getElementById('sheetId').value = CONFIG.sheetId;
+            App.init();
+        };
+
+        async function gasCall(functionName, payload) {
+            if (!CONFIG.url) {
+                toast("Error: No se ha configurado la URL", "error");
+                return { success: false, error: "URL no configurada" };
+            }
+            document.getElementById('loading').classList.remove('hidden');
+
+            return new Promise((resolve) => {
+                const cb = 'callback_' + Math.round(Math.random() * 1000000);
+                const url = `${CONFIG.url}?action=${functionName}&payload=${encodeURIComponent(JSON.stringify(payload))}&spreadsheetId=${CONFIG.sheetId}&callback=${cb}`;
+
+                window[cb] = (data) => {
+                    delete window[cb];
+                    document.getElementById('loading').classList.add('hidden');
+                    resolve(data);
+                };
+
+                const script = document.createElement('script');
+                script.src = url;
+                script.onerror = () => {
+                    document.getElementById('loading').classList.add('hidden');
+                    toast("Error de conexión remota", "error");
+                    resolve({ success: false, error: "Error de red" });
+                };
+                document.body.appendChild(script);
+            });
+        }
+
         const App = {
-            user: null, page: 'dashboard',
             init() {
-                this.loadLogo();
-                this.setupPin();
-                document.getElementById('btnLogin').onclick = () => this.login();
-                document.getElementById('topbarDate').innerText = new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+                this.setupPinInputs();
+                document.getElementById('btnLogin').onclick = () => this.attemptLogin();
             },
-            setupPin() {
+            setupPinInputs() {
                 const pins = document.querySelectorAll('.pin-digit');
-                pins.forEach((p, i) => {
-                    p.oninput = () => { if (p.value && i < 3) pins[i + 1].focus(); if (i === 3) this.login(); };
-                    p.onkeydown = (e) => { if (e.key === 'Backspace' && !p.value && i > 0) pins[i - 1].focus(); };
-                });
-            },
-            async loadLogo() {
-                try {
-                    // Intenta cargar logo desde backend (getImgBase64)
-                    const res = await this.api('getAppLogo');
-                    if (res && res.success && res.image) {
-                        const img = document.getElementById('headerLogo');
-                        img.src = res.image;
-                        img.style.display = 'block';
-                    }
-                } catch (e) { console.warn('Error loading logo', e); }
-            },
-            async api(action, payload = {}) {
-                try {
-                    const response = await fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action, payload, spreadsheetId: SPREADSHEET_ID })
+                pins.forEach((input, i) => {
+                    input.addEventListener('input', () => {
+                        if (input.value && i < 3) pins[i + 1].focus();
+                        if (i === 3 && input.value) this.attemptLogin();
                     });
-                    const res = await response.json();
-                    if (res.success === false) { this.toast(res.error || 'Error del servidor', 'danger'); return res; }
-                    return res;
-                } catch (e) {
-                    console.warn('Conexión Offline - Usando emulación local (Demo Mode)');
-                    return this.localEngine(action, payload);
-                }
-            },
-            localEngine(action, p) {
-                // Emula el backend si falla la conexión
-                if (action === 'login') return { success: true, usuario: { id: 'U01', nombre: 'Administrador Principal', rol: 'ADMIN' } };
-                if (action === 'getAllData') return { success: true, data: { indicadores: { pctAvance: 65, kmEjec: 142.8, hallAbiertos: 4, actEnCurso: 2, foliosHoy: 12 } } };
-                return { success: true, id: 'DMO-' + Date.now() };
-            },
-            toast(msg, type = 'info') {
-                const c = document.getElementById('toastContainer');
-                const t = document.createElement('div');
-                t.className = `toast ${type === 'danger' ? 'danger' : ''}`;
-                t.innerText = msg;
-                c.appendChild(t);
-                setTimeout(() => t.remove(), 3500);
-            },
-            async uploadPhoto(fileInputId, maxSizePx = 1024) {
-                const input = document.getElementById(fileInputId);
-                if (!input || !input.files || input.files.length === 0) return null;
-                const file = input.files[0];
-
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            let width = img.width;
-                            let height = img.height;
-
-                            if (width > height) {
-                                if (width > maxSizePx) { height *= maxSizePx / width; width = maxSizePx; }
-                            } else {
-                                if (height > maxSizePx) { width *= maxSizePx / height; height = maxSizePx; }
-                            }
-
-                            canvas.width = width;
-                            canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, width, height);
-
-                            const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // Compress to 70% quality
-
-                            this.toast('Subiendo foto...', 'info');
-                            // Upload to Backend
-                            this.api('saveImageToDrive', { base64Data: dataUrl }).then(res => {
-                                if (res.success) resolve(res.id);
-                                else { this.toast('Error subiendo foto', 'danger'); resolve(null); }
-                            }).catch(err => { this.toast('Error de red', 'danger'); resolve(null); });
-                        };
-                        img.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Backspace' && !input.value && i > 0) pins[i - 1].focus();
+                    });
                 });
             },
-            async login() {
+            async attemptLogin() {
                 const pin = Array.from(document.querySelectorAll('.pin-digit')).map(i => i.value).join('');
                 if (pin.length < 4) return;
 
                 console.log('Attempting login with PIN:', pin);
-                this.toast('Verificando PIN...', 'info');
+                toast('Verificando PIN...', 'info');
 
-                const res = await this.api('login', pin);
+                const btn = document.getElementById('btnLogin');
+                btn.disabled = true;
+                const res = await gasCall('login', pin);
+
                 console.log('Login result:', res);
 
-                if (res.success) {
-                    this.user = res.usuario;
-                    document.getElementById('screen-login').classList.add('hidden');
-                    document.getElementById('app-shell').classList.remove('hidden');
-                    document.getElementById('userName').innerText = this.user.nombre;
-                    document.getElementById('userRole').innerText = this.user.rol;
-                    document.getElementById('userAvatar').innerText = this.user.nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                    this.refreshData();
+                if (res && res.success) {
+                    CONFIG.user = res.usuario;
+                    this.enterApp();
                 } else {
-                    document.getElementById('loginError').innerText = res.error || 'PIN incorrecto';
-                    this.toast('Error: ' + (res.error || 'PIN incorrecto'), 'danger');
-                    document.querySelectorAll('.pin-digit').forEach(i => i.value = '');
-                    document.querySelectorAll('.pin-digit')[0].focus();
+                    btn.disabled = false;
+                    document.getElementById('loginError').innerText = res.error || "Acceso Denegado";
+                    toast(res.error || "Error de autenticación", "error");
                 }
             },
-            async refreshData() {
-                const res = await this.api('getAllData', 'TODOS');
-                if (res.success && res.data) { Object.assign(DB, res.data); }
-                this.renderNav();
+            enterApp() {
+                document.getElementById('screen-login').classList.add('hidden');
+                document.getElementById('configPanel').classList.add('hidden');
+                document.getElementById('app-shell').style.display = 'flex';
+                document.getElementById('userInfo').innerHTML = `
+                    <span style="background: var(--accent-tertiary); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: var(--accent-primary);">
+                        ${CONFIG.user.rol}
+                    </span>
+                    <span>${CONFIG.user.nombre}</span>
+                `;
+                this.renderSidebar();
+                this.refreshData();
                 this.navigate('dashboard');
             },
-            renderNav() {
+            renderSidebar() {
+                const rol = CONFIG.user.rol;
                 const nav = document.getElementById('sidebarNav');
-                const menu = [
-                    { id: 'dashboard', label: '📊 Dashboard Operativo', roles: ['ADMIN', 'SUPERVISOR'] },
-                    { id: 'plan-trabajo', label: '📅 Plan de Trabajo', roles: ['ADMIN', 'SUPERVISOR'] },
-                    { id: 'mis-actividades', label: '🚚 Mi Jornada', roles: ['LIDER', 'ADMIN'] },
-                    { id: 'seguridad-hse', label: '🛡️ Seguridad & SASISOPA', roles: ['ADMIN', 'SEGURISTA', 'SUPERVISOR'] },
-                    { id: 'gestion-epp', label: '🦺 Gestión EPP', roles: ['ADMIN', 'SEGURISTA'] },
-                    { id: 'resguardo-inspeccion', label: '🚜 Resguardo & Insp.', roles: ['ADMIN', 'LIDER', 'SUPERVISOR'] },
-                    { id: 'permisos-ambiental', label: '🛡️ Permisos & Amb.', roles: ['ADMIN', 'SEGURISTA', 'SUPERVISOR'] },
-                    { id: 'alta-usuarios', label: '👥 Alta de Personal', roles: ['ADMIN'] },
-                    { id: 'reportes', label: '📄 Reportes & Folios', roles: ['ADMIN', 'SUPERVISOR'] }
-                ];
-                nav.innerHTML = menu.filter(m => m.roles.includes(this.user.rol)).map(m => `
-                    <div class="nav-item ${this.page === m.id ? 'active' : ''}" onclick="App.navigate('${m.id}')">${m.label}</div>
-                `).join('');
-            },
-            navigate(id) {
-                this.page = id;
-                this.renderNav();
-                document.getElementById('topbarTitle').innerText = document.querySelector('.nav-item.active')?.innerText || 'DmV Control';
-                document.getElementById('sidebar').classList.remove('open');
-                if (Pages[id]) Pages[id]();
-            }
-        };
-
-        const Pages = {
-            dashboard() {
-                const k = DB.indicadores || { pctAvance: 0, kmEjec: 0, hallAbiertos: 0, actEnCurso: 0, foliosHoy: 0 };
-                document.getElementById('pageContent').innerHTML = `
-                    <div class="grid-stats">
-                        <div class="stat-card"><span class="stat-lbl">Avance Mensual</span><span class="stat-val" style="color:var(--success)">${k.pctAvance}%</span><small style="color:var(--text-dim)">Licitación 2024</small></div>
-                        <div class="stat-card"><span class="stat-lbl">Km Ejecutados</span><span class="stat-val">${k.kmEjec} km</span><small style="color:var(--text-dim)">Transporte por Ducto</small></div>
-                        <div class="stat-card"><span class="stat-lbl">Hallazgos Abiertos</span><span class="stat-val" style="color:var(--danger)">${k.hallAbiertos}</span><small style="color:var(--text-dim)">Pendientes de Cierre</small></div>
-                        <div class="stat-card"><span class="stat-lbl">Folios Hoy</span><span class="stat-val" style="color:var(--warning)">${k.foliosHoy}</span><small style="color:var(--text-dim)">SGO DMV v3.0</small></div>
+                let html = `
+                    <div class="nav-item" onclick="navigate('dashboard')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        Dashboard
                     </div>
                 `;
-            },
-            'plan-trabajo'() {
-                // Datos semilla si está vacío
-                if (!DB.planTrabajo || DB.planTrabajo.length === 0) {
-                    DB.planTrabajo = [
-                        { ID: 'P01', TipoTrabajo: 'Deshierbe Manual', UnidadMedida: 'Km', CantidadProgramada: 50, CantidadEjecutada: 12, Avance: 24 },
-                        { ID: 'P02', TipoTrabajo: 'Limpieza de Estructuras', UnidadMedida: 'Pza', CantidadProgramada: 15, CantidadEjecutada: 5, Avance: 33 },
-                        { ID: 'P03', TipoTrabajo: 'Patrullaje Preventivo', UnidadMedida: 'Km', CantidadProgramada: 200, CantidadEjecutada: 150, Avance: 75 }
-                    ];
+
+                if (rol === 'ADMIN' || rol === 'SUPERVISOR') {
+                    html += `
+                        <div class="nav-item" onclick="navigate('actividades')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            Actividades
+                        </div>
+                        <div class="nav-item" onclick="navigate('alta-personal')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle></svg>
+                            Alta Personal
+                        </div>
+                    `;
                 }
 
+                if (rol === 'LIDER' || rol === 'ADMIN') {
+                    html += `
+                        <div class="nav-item" onclick="navigate('iniciar-jornada')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"></path></svg>
+                            Iniciar Jornada
+                        </div>
+                        <div class="nav-item" onclick="navigate('cierre-jornada')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg>
+                            Cierre Jornada
+                        </div>
+                    `;
+                }
+
+                if (rol === 'SEGURISTA' || rol === 'ADMIN' || rol === 'SUPERVISOR') {
+                    html += `
+                        <div class="nav-item" onclick="navigate('patrullaje')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            Patrullaje
+                        </div>
+                        <div class="nav-item" onclick="navigate('hallazgos')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            Hallazgos
+                        </div>
+                        <div class="nav-item" onclick="navigate('inspeccion-herramientas')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                            Inspecciones
+                        </div>
+                        <div class="nav-item" onclick="navigate('actos-inseguros')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                            Actos Inseguros
+                        </div>
+                        <div class="nav-item" onclick="navigate('accidentes')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+                            Accidentes
+                        </div>
+                    `;
+                }
+
+                nav.innerHTML = html;
+            },
+            async refreshData() {
+                const data = await gasCall('getAllData', 'TODOS');
+                if (data) {
+                    CONFIG.db = data;
+                    if (this.currentPage) this.navigate(this.currentPage);
+                }
+            },
+            navigate(page) {
+                this.currentPage = page;
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('onclick').includes(page)) item.classList.add('active');
+                });
+
+                const methods = {
+                    'dashboard': () => this.renderDashboard(),
+                    'actividades': () => this.renderActividades(),
+                    'alta-personal': () => this.renderAltaPersonal(),
+                    'iniciar-jornada': () => this.renderIniciarJornada(),
+                    'cierre-jornada': () => this.renderCierreJornada(),
+                    'inspeccion-herramientas': () => this.renderInspeccion(),
+                    'actos-inseguros': () => this.renderActosInseguros(),
+                    'patrullaje': () => this.renderPatrullaje(),
+                    'hallazgos': () => this.renderHallazgos(),
+                    'accidentes': () => this.renderAccidentes()
+                };
+
+                if (methods[page]) methods[page]();
+                else this.renderDashboard();
+            },
+
+            renderDashboard() {
+                const db = CONFIG.db;
+                document.getElementById('topbarTitle').innerText = "Panel Principal";
                 document.getElementById('pageContent').innerHTML = `
-                    <div class="card">
-                        <div class="card-header">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #eff6ff; color: #2563eb;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                            </div>
                             <div>
-                                <h3>Plan de Trabajo (Licitación)</h3>
-                                <p style="color:var(--text-dim); font-size:0.8rem">F-GC-OP-01 · Periodo 2024</p>
+                                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Actividades</span>
+                                <h2 style="font-size: 1.75rem; font-weight: 700;">${db.actividades?.length || 0}</h2>
                             </div>
-                            <button class="btn btn-primary btn-sm" onclick="App.toast('Importando desde CSV/Excel...')">↑ Cargar Plan</button>
                         </div>
-                        <div class="table-wrap">
-                            <table class="table">
-                                <thead><tr><th>Concepto</th><th>Unidad</th><th>Meta</th><th>Ejecutado</th><th>Avance</th><th>Acciones</th></tr></thead>
-                                <tbody>
-                                    ${DB.planTrabajo.map(p => `
-                                        <tr>
-                                            <td><strong>${p.TipoTrabajo}</strong></td>
-                                            <td>${p.UnidadMedida}</td>
-                                            <td>${p.CantidadProgramada}</td>
-                                            <td>${p.CantidadEjecutada}</td>
-                                            <td>
-                                                <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden">
-                                                    <div style="width:${p.Avance}%; height:100%; background:var(--success)"></div>
-                                                </div>
-                                                <small>${p.Avance}%</small>
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-primary btn-sm" onclick="Pages.abrirModalAsignar('${p.ID}', '${p.TipoTrabajo}')">Asignar</button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #f0fdf4; color: #10b981;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Personal</span>
+                                <h2 style="font-size: 1.75rem; font-weight: 700;">${db.usuarios?.length || 0}</h2>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: #fff7ed; color: #f59e0b;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
+                            </div>
+                            <div>
+                                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">Hallazgos</span>
+                                <h2 style="font-size: 1.75rem; font-weight: 700;">${db.hallazgos?.length || 0}</h2>
+                            </div>
                         </div>
                     </div>
+
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3 style="font-weight: 700;">Mis Actividades Recientes</h3>
+                            <button class="btn btn-primary" style="padding: 8px 16px; font-size: 0.8rem;" onclick="App.refreshData()">🔄 Actualizar</button>
+                        </div>
+                        <table class="premium-table">
+                            <thead><tr><th>ID</th><th>Trabajo</th><th>Tramo</th><th>Estado</th></tr></thead>
+                            <tbody>
+                                ${(db.actividades || []).filter(a => a.lider === CONFIG.user.id || CONFIG.user.rol === 'ADMIN').slice(0, 5).map(a => `
+                                    <tr>
+                                        <td style="font-weight: 600;">${a.ID}</td>
+                                        <td>${a.Tipo}</td>
+                                        <td>${a.Tramo || '---'}</td>
+                                        <td><span class="badge ${a.Estado === 'En Curso' ? 'badge-success' : 'badge-warning'}">${a.Estado}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 `;
             },
-            abrirModalAsignar(planId, tipo) {
-                const tramos = DB.tramos && DB.tramos.length ? DB.tramos : [];
-                const lideres = DB.usuarios.filter(u => u.rol === 'LIDER' || u.rol === 'ADMIN');
-                if (!lideres.length) lideres.push({ id: 'U01', nombre: 'Líder Demo 1' }, { id: 'U02', nombre: 'Líder Demo 2' });
 
-                const html = `
-                    <h3 style="margin-bottom:20px">Asignar Actividad: ${tipo}</h3>
-                    <div class="form-group"><label class="form-label">Tramo de Operación</label>
-                        <select class="form-select" id="asTramo">${tramos.map(t => `<option value="${t.ID}">${t.Nombre || t.nombre}</option>`).join('')}</select>
-                    </div>
-                    <div class="form-group"><label class="form-label">Líder Responsable</label>
-                        <select class="form-select" id="asLider">${lideres.map(l => `<option value="${l.id || l.ID}">${l.nombre || l.Nombre}</option>`).join('')}</select>
-                    </div>
-                    <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:16px">
-                        <div class="form-group"><label class="form-label">Fecha Programada</label><input type="date" class="form-input" id="asFecha" value="${new Date().toISOString().split('T')[0]}"></div>
-                        <div class="form-group"><label class="form-label">Meta (Km/Pza)</label><input type="number" class="form-input" id="asMeta" value="10"></div>
-                    </div>
-                    <div style="display:flex; gap:12px; margin-top:10px">
-                        <button class="btn btn-block" onclick="document.getElementById('modal-overlay').classList.remove('active')" style="background:rgba(255,255,255,0.05)">CANCELAR</button>
-                        <button class="btn btn-primary btn-block" onclick="Pages.guardarAsignacion('${planId}', '${tipo}')">CONFIRMAR ASIGNACIÓN</button>
-                    </div>
-                `;
-                document.getElementById('modalContent').innerHTML = html;
-                document.getElementById('modal-overlay').classList.add('active');
-            },
-            async guardarAsignacion(planId, tipo) {
-                const datos = {
-                    planId, tipo,
-                    tramoId: document.getElementById('asTramo').value,
-                    liderId: document.getElementById('asLider').value,
-                    fecha: document.getElementById('asFecha').value,
-                    kmProg: document.getElementById('asMeta').value,
-                    adminId: App.user.id
-                };
-
-                App.toast('Asignando actividad...', 'info');
-                const res = await App.api('crearActividad', datos);
-
-                if (res.success) {
-                    App.toast('¡Actividad Asignada con Folio ' + (res.id || 'GC-OP-001') + '!', 'success');
-                    document.getElementById('modal-overlay').classList.remove('active');
-                    App.refreshData(); // Actualiza para ver la nueva actividad en el dashboard
-                }
-            },
-            'mis-actividades'() {
-                const acts = DB.actividades || [];
+            renderIniciarJornada() {
+                const acts = (CONFIG.db.actividades || []).filter(a => a.estado !== 'Completada');
+                document.getElementById('topbarTitle').innerText = "Inicio de Jornada";
                 document.getElementById('pageContent').innerHTML = `
-                    <div class="card">
-                        <div class="card-header"><h3>🗂 Mi Jornada de Hoy</h3><span class="badge badge-orange">Pendiente AST</span></div>
-                        ${acts.length ? acts.map(a => `
-                            <div class="stat-card" style="margin-bottom:12px; padding:16px; border-left:4px solid var(--warning)">
-                                <div style="display:flex; justify-content:between; align-items:start">
-                                    <div style="flex:1">
-                                        <div style="font-weight:700; font-size:1rem">${a.Tipo || a.tipo}</div>
-                                        <div style="font-size:0.75rem; color:var(--text-dim)">#${a.ID} · ${a.Tramo || 'Tramo General'}</div>
-                                    </div>
-                                    <span class="badge ${a.Estado === 'En Curso' ? 'badge-green' : 'badge-orange'}">${a.Estado}</span>
-                                </div>
-                                <div style="margin-top:12px; display:flex; gap:8px">
-                                    <button class="btn btn-sm" style="background:rgba(14,165,233,0.1); color:var(--accent)" onclick="App.navigate('seguridad-hse')">Firmar AST</button>
-                                    <button class="btn btn-primary btn-sm" onclick="App.navigate('iniciar-jornada')">Iniciar</button>
-                                </div>
-                            </div>
-                        `).join('') : '<div class="empty-state">No tienes actividades asignadas por el supervisor.</div>'}
-                    </div>
-                `;
-            },
-            // ... resto de las páginas se mantienen optimizadas
-            'alta-usuarios'() {
-                document.getElementById('pageContent').innerHTML = `
-                    <div class="card" style="max-width:600px; margin: 0 auto;">
-                        <div class="card-header"><h3>Registro de Nuevo Personal</h3></div>
-                        <div class="form-group"><label class="form-label">Nombre Completo *</label><input type="text" class="form-input" id="upNombre" placeholder="P. ej. Juan Pérez"></div>
-                        <div class="form-group"><label class="form-label">Puesto / Cargo *</label>
-                            <select class="form-select" id="upPuesto">
-                                <option value="Ayudante">Ayudante General</option><option value="Lider">Líder de Cuadrilla</option>
-                                <option value="Supervisor">Supervisor de Campo</option><option value="Segurista">Segurista HSE</option>
+                    <div class="login-box" style="margin:0 auto; max-width: 500px;">
+                        <h2 style="margin-bottom:20px; text-align:center;">▶ Iniciar Actividad</h2>
+                        <div class="form-group">
+                            <label>Seleccione Actividad</label>
+                            <select id="ij-act" class="pin-digit" style="width:100%; height:48px; text-align:left; padding:0 15px;">
+                                ${acts.map(a => `<option value="${a.ID}">${a.ID} - ${a.Tipo}</option>`).join('')}
                             </select>
                         </div>
-                        <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:16px">
-                            <div class="form-group"><label class="form-label">PIN de Acceso (4 dígitos) *</label><input type="password" maxlength="4" class="form-input" id="upPin"></div>
-                            <div class="form-group"><label class="form-label">Rol de Sistema *</label>
-                                <select class="form-select" id="upRol"><option value="LIDER">Líder / Campo</option><option value="SEGURISTA">Segurista</option><option value="SUPERVISOR">Supervisor</option><option value="ADMIN" selected>Administrador</option></select>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary btn-block" onclick="App.toast('Guardando en Sheet...')">GUARDAR Y ACTIVAR PIN</button>
-                    </div>
-                `;
-            },
-
-            // ====================================================================================
-            // MODULOS SEGURISTA (AST, Inspecciones, Salud, Simulacros, NOMs)
-            // ====================================================================================
-            'seguridad-hse'() {
-                document.getElementById('pageContent').innerHTML = `
-                    <div class="card">
-                        <div class="card-header"><h3>🛡️ Gestión HSE & SASISOPA</h3></div>
-                        <div class="grid-stats" style="grid-template-columns: 1fr 1fr;">
-                            <div class="stat-card" onclick="Pages['ast-lider']()" style="cursor:pointer; border-left:4px solid var(--primary)">
-                                <span class="stat-lbl">AST Digital</span>
-                                <span class="stat-val" style="font-size:1.2rem">Análisis de Riesgos</span>
-                            </div>
-                            <div class="stat-card" onclick="Pages['cumplimiento-nom']()" style="cursor:pointer; border-left:4px solid var(--success)">
-                                <span class="stat-lbl">Normatividad</span>
-                                <span class="stat-val" style="font-size:1.2rem">Checklists NOM</span>
-                            </div>
-                            <div class="stat-card" onclick="Pages['inspeccion-herramientas']()" style="cursor:pointer; border-left:4px solid var(--warning)">
-                                <span class="stat-lbl">Herramientas</span>
-                                <span class="stat-val" style="font-size:1.2rem">Inspección</span>
-                            </div>
-                            <div class="stat-card" onclick="Pages['actos-inseguros']()" style="cursor:pointer; border-left:4px solid var(--danger)">
-                                <span class="stat-lbl">Actos Inseguros</span>
-                                <span class="stat-val" style="font-size:1.2rem">Reportes</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            },
-
-            'cumplimiento-nom'() {
-                document.getElementById('pageContent').innerHTML = `
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>📜 Cumplimiento Normativo (STPS/ASEA)</h3>
-                            <div style="display:flex; gap:10px">
-                                <button class="btn btn-sm btn-primary" onclick="Pages.renderNOMChecklist('NOM-030')">NOM-030</button>
-                                <button class="btn btn-sm btn-secondary" onclick="Pages.renderNOMChecklist('NOM-017')">NOM-017</button>
-                            </div>
-                        </div>
-                        <div id="nom-content" style="margin-top:20px">
-                            <div class="empty-state">Seleccione una norma para iniciar la verificación.</div>
-                        </div>
-                    </div>
-                `;
-                // Default render
-                Pages.renderNOMChecklist('NOM-030');
-            },
-
-            renderNOMChecklist(nom) {
-                const checklists = {
-                    'NOM-030': [
-                        { id: '30-1', q: '¿Existe un diagnóstico integral de seguridad y salud?' },
-                        { id: '30-2', q: '¿Se cuenta con un programa de seguridad y salud en el trabajo?' },
-                        { id: '30-3', q: '¿Existe una relación de medidas preventivas para los riesgos detectados?' },
-                        { id: '30-4', q: '¿Se capacita al personal sobre las medidas de seguridad?' }
-                    ],
-                    'NOM-017': [
-                        { id: '17-1', q: '¿Se identifican los riesgos por puesto de trabajo?' },
-                        { id: '17-2', q: '¿Se determina el EPP necesario para cada puesto?' },
-                        { id: '17-3', q: '¿Se proporciona el EPP a los trabajadores?' },
-                        { id: '17-4', q: '¿Se revisa que el EPP se utilice correctamente?' }
-                    ]
-                };
-
-                const questions = checklists[nom] || [];
-
-                document.getElementById('nom-content').innerHTML = `
-                    <h4 style="color:var(--accent); margin-bottom:15px">${nom} - Lista de Verificación</h4>
-                    ${questions.map(q => `
-                        <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:6px; margin-bottom:10px">
-                            <div style="margin-bottom:8px; font-weight:500">${q.q}</div>
-                            <div style="display:flex; gap:10px">
-                                <label class="badge badge-green" style="cursor:pointer; flex:1; text-align:center">
-                                    <input type="radio" name="${q.id}" value="CUMPLE" class="nom-check"> CUMPLE
-                                </label>
-                                <label class="badge badge-orange" style="cursor:pointer; flex:1; text-align:center">
-                                    <input type="radio" name="${q.id}" value="PARCIAL" class="nom-check"> PARCIAL
-                                </label>
-                                <label class="badge badge-red" style="cursor:pointer; flex:1; text-align:center">
-                                    <input type="radio" name="${q.id}" value="NO_CUMPLE" class="nom-check"> NO CUMPLE
-                                </label>
-                            </div>
-                        </div>
-                    `).join('')}
-                    <button class="btn btn-primary btn-block" onclick="Pages.submitNOM('${nom}')" style="margin-top:20px">GUARDAR EVALUACIÓN</button>
-                `;
-            },
-
-            async submitNOM(nom) {
-                const checks = [];
-                let answered = 0;
-                let total = 0;
-
-                // Get all radio groups names
-                const groupNames = new Set(Array.from(document.querySelectorAll('.nom-check')).map(r => r.name));
-                total = groupNames.size;
-
-                groupNames.forEach(name => {
-                    const val = document.querySelector(`input[name="${name}"]:checked`)?.value;
-                    if (val) {
-                        checks.push({ id: name, result: val });
-                        answered++;
-                    }
-                });
-
-                if (answered < total) return App.toast('Responda todas las preguntas', 'error');
-
-                App.toast('Guardando evaluación...', 'info');
-                const res = await App.api('registrarChecklistNOM', {
-                    nom: nom,
-                    resultados: checks,
-                    userId: App.user.id
-                });
-
-                if (res.success) {
-                    App.toast('Evaluación NOM Registrada', 'success');
-                    Pages['seguridad-hse']();
-                }
-            },
-
-            'ast-lider'() {
-                const acts = DB.actividades.filter(a =>
-                    (a.lider === App.user.id || App.user.rol === 'SEGURISTA' || App.user.rol === 'SUPERVISOR') &&
-                    (a.estado === 'Programada' || a.estado === 'En Curso' || !a.estado)
-                );
-
-                document.getElementById('pageContent').innerHTML = `
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title">🛡️ AST Multifactorial (Digital)</span>
-                            <div style="display:flex; gap:5px">
-                                <button class="btn btn-sm" onclick="App.navigate('inspeccion-herramientas')">🔧 Herramientas</button>
-                                <button class="btn btn-sm btn-danger" onclick="App.navigate('actos-inseguros')">⚠️ Actos</button>
-                            </div>
-                        </div>
-                        <div class="alert-strip text-blue">
-                            <strong>Normativa:</strong> Identifique peligros y medidas de control para cada fase.
-                        </div>
-    
                         <div class="form-group">
-                            <label class="form-label">Seleccione Actividad Programada *</label>
-                            <select class="form-select" id="astActividad">
-                                <option value="">-- Seleccionar --</option>
-                                ${acts.map(a => `<option value="${a.ID}">${a.ID} | ${a.Tipo} — ${a.Tramo || 'General'}</option>`).join('')}
-                            </select>
+                            <label>Foto de Inicio</label>
+                            <input type="file" id="ij-foto" class="pin-digit" style="width:100%; height:48px; padding:10px;" accept="image/*">
                         </div>
-    
-                        <div id="astMatrixContainer">
-                            <div class="ast-row" id="astRow1">
-                                <h4 style="margin:10px 0; border-bottom:1px solid var(--border-color); font-size:1rem; color:var(--accent);">Fase 1: Preparación del Sitio</h4>
-                                <div class="form-group"><input type="text" class="form-input" placeholder="Peligro (Ej. Fauna nociva, terreno irregular)" id="plg1"></div>
-                                <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
-                                    <select class="form-select" id="rsg1"><option value="Bajo">Riesgo Bajo</option><option value="Medio">Riesgo Medio</option><option value="Alto">Riesgo Alto</option></select>
-                                    <input type="text" class="form-input" placeholder="Control (Ej. Uso de polainas)" id="ctl1">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <button class="btn btn-secondary btn-sm" onclick="Pages.addASTRow()" style="margin-top:15px; margin-bottom:20px; width:100%">+ Agregar Fase / Peligro</button>
-    
-                        <div class="form-group">
-                            <label class="form-label">Firmas de la Cuadrilla (Charla de 5 min)</label>
-                            <div style="display:flex; gap:10px; flex-wrap:wrap; background:rgba(255,255,255,0.03); padding:10px; border-radius:8px">
-                                 ${(DB.usuarios || []).filter(u => u.rol === 'LIDER').map(p => `
-                                    <label class="badge badge-gray" style="cursor:pointer; display:flex; align-items:center; gap:5px">
-                                        <input type="checkbox" class="ast-firma" value="${p.id || p.ID}"> ${p.nombre || p.Nombre}
-                                    </label>`).join('')}
-                            </div>
-                        </div>
-    
-                        <button class="btn btn-primary btn-block" onclick="Pages.submitASTMulti()">✓ Validar y Firmar AST Digital</button>
+                        <button class="btn btn-primary" onclick="App.submitInicio()" style="width:100%;">🚀 Iniciar ahora</button>
                     </div>
                 `;
             },
 
-            astRowCount: 1,
-            addASTRow() {
-                this.astRowCount++;
-                const div = document.createElement('div');
-                div.className = 'ast-row fade-in';
-                div.id = 'astRow' + this.astRowCount;
-                div.style.marginTop = '15px';
-                div.style.paddingTop = '15px';
-                div.style.borderTop = '1px dashed var(--border-color)';
-                div.innerHTML = `
-                    <h4 style="margin:10px 0; font-size:1rem; color:var(--accent);">Fase ${this.astRowCount}: Ejecución</h4>
-                    <div class="form-group"><input type="text" class="form-input" placeholder="Peligro Adicional" id="plg${this.astRowCount}"></div>
-                    <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
-                        <select class="form-select" id="rsg${this.astRowCount}"><option value="Bajo">Riesgo Bajo</option><option value="Medio">Riesgo Medio</option><option value="Alto">Riesgo Alto</option></select>
-                        <input type="text" class="form-input" placeholder="Medida de Control" id="ctl${this.astRowCount}">
-                    </div>
-                `;
-                document.getElementById('astMatrixContainer').appendChild(div);
-            },
+            async submitInicio() {
+                const id = document.getElementById('ij-act').value;
+                const btn = event.target;
+                btn.disabled = true; btn.innerText = "⏳ Iniciando...";
 
-            async submitASTMulti() {
-                const actId = document.getElementById('astActividad').value;
-                if (!actId) return App.toast('Seleccione una actividad', 'error');
-
-                const peligros = [], riesgos = [], controles = [];
-                for (let i = 1; i <= this.astRowCount; i++) {
-                    const p = document.getElementById('plg' + i)?.value;
-                    if (p) {
-                        peligros.push(p);
-                        riesgos.push(document.getElementById('rsg' + i).value);
-                        controles.push(document.getElementById('ctl' + i).value);
-                    }
-                }
-
-                if (peligros.length === 0) return App.toast('Registre al menos un peligro y control', 'error');
-
-                const firmas = Array.from(document.querySelectorAll('.ast-firma:checked')).map(c => c.value);
-
-                const payload = {
-                    actividadId: actId,
-                    userId: App.user.id,
-                    peligros: peligros,
-                    riesgos: riesgos,
-                    controles: controles,
-                    firmas: firmas
-                };
-
-                App.toast('Enviando AST...', 'info');
-                const res = await App.api('saveASTMultifactorial', payload);
+                const res = await gasCall('iniciarActividad', { id, userId: CONFIG.user.id });
                 if (res.success) {
-                    App.toast('AST Firmado y Aprobado. Folio: ' + res.id, 'success');
-                    if (confirm('¿Desea descargar el PDF del AST ahora?')) {
-                        Pages.generarPDF(res.id, 'AST');
-                    }
-                    App.refreshData();
-                    App.navigate('dashboard');
+                    toast("✅ Jornada iniciada correctamente");
+                    this.refreshData();
+                    this.navigate('dashboard');
                 } else {
-                    App.toast(res.error || 'Error al guardar AST', 'error');
+                    toast("❌ " + res.error, "error");
+                    btn.disabled = false; btn.innerText = "🚀 Iniciar ahora";
                 }
             },
 
-            'inspeccion-herramientas'() {
+            renderCierreJornada() {
+                const acts = (CONFIG.db.actividades || []).filter(a => a.Estado === 'En Curso');
+                document.getElementById('topbarTitle').innerText = "Cierre de Jornada";
                 document.getElementById('pageContent').innerHTML = `
-                    <div class="card">
-                        <div class="card-header"><span class="card-title">🔧 Inspección de Herramientas</span></div>
+                    <div class="login-box" style="margin:0 auto; max-width: 500px;">
+                        <h2 style="margin-bottom:20px; text-align:center;">🏁 Finalizar Trabajo</h2>
                         <div class="form-group">
-                            <label class="form-label">Actividad Vinculada</label>
-                            <select class="form-select" id="ihActividad">
-                                <option value="">General (Sin actividad)</option>
-                                ${DB.actividades.filter(a => (a.estado || a.Estado) === 'En Curso').map(a =>
-                    `<option value="${a.ID}">${a.Tipo} - ${a.Tramo}</option>`
-                ).join('')}
+                            <label>Actividad a Cerrar</label>
+                            <select id="cj-act" class="pin-digit" style="width:100%; height:48px; text-align:left; padding:0 15px;">
+                                ${acts.map(a => `<option value="${a.ID}">${a.ID} - ${a.Tipo}</option>`).join('')}
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Descripción de la Inspección *</label>
-                            <textarea class="form-textarea" id="ihDesc" placeholder="Estado de herramientas, obsolescencia, daños..."></textarea>
+                            <label>Observaciones / Pendientes</label>
+                            <textarea id="cj-obs" class="pin-digit" style="width:100%; height:80px; text-align:left; padding:10px;"></textarea>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Estado General</label>
-                            <select class="form-select" id="ihEstado">
-                                <option value="Bueno">Bueno</option>
-                                <option value="Regular">Regular</option>
-                                <option value="Malo">Malo</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary btn-block" onclick="Pages.submitInspeccionHerramientas()">✓ Guardar Inspección</button>
+                        <button class="btn btn-primary" onclick="App.submitCierre()" style="width:100%;">✓ Reportar Cierre</button>
                     </div>
                 `;
             },
 
-            async submitInspeccionHerramientas() {
-                const desc = document.getElementById('ihDesc').value;
-                const estado = document.getElementById('ihEstado').value;
-                const actId = document.getElementById('ihActividad').value;
-                if (!desc) return App.toast('Descripción requerida', 'error');
-
-                App.toast('Guardando Inspección...', 'info');
-                const res = await App.api('guardarInspeccionHerramienta', {
-                    actividadId: actId,
-                    descripcion: desc,
-                    estado: estado,
-                    userId: App.user.id
-                });
-
+            async submitCierre() {
+                const id = document.getElementById('cj-act').value;
+                const obs = document.getElementById('cj-obs').value;
+                const res = await gasCall('completarActividad', { id, userId: CONFIG.user.id, observaciones: obs });
                 if (res.success) {
-                    App.toast('Inspección guardada', 'success');
-                    App.refreshData();
-                    App.navigate('dashboard');
+                    toast("✅ Actividad completada y reportada");
+                    this.refreshData();
+                    this.navigate('dashboard');
+                } else {
+                    toast("❌ Error al cerrar", "error");
                 }
             },
 
-            generarPDF(id, tipo) {
-                App.toast('Generando PDF Nativo...', 'info');
-                App.api('generarReporteUnitario', { id, tipo, userId: App.user.id }).then(res => {
-                    if (res.success) {
-                        window.open(res.url, '_blank');
-                    } else {
-                        App.toast('Error PDF: ' + res.error, 'error');
-                    }
-                });
+            renderActividades() {
+                const acts = CONFIG.db.actividades || [];
+                document.getElementById('topbarTitle').innerText = "Listado de Actividades";
+                document.getElementById('pageContent').innerHTML = `
+                    <div class="table-card">
+                        <table class="premium-table">
+                            <thead><tr><th>Folio</th><th>Tipo</th><th>Líder</th><th>Estado</th></tr></thead>
+                            <tbody>
+                                ${acts.map(a => `
+                                    <tr>
+                                        <td>${a.ID}</td>
+                                        <td>${a.Tipo}</td>
+                                        <td>${a.Lider || '---'}</td>
+                                        <td><span class="badge ${a.Estado === 'Completada' ? 'badge-success' : 'badge-warning'}">${a.Estado}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
             },
 
-            'actos-inseguros'() {
+            renderAltaPersonal() {
+                document.getElementById('topbarTitle').innerText = "Alta de Personal";
                 document.getElementById('pageContent').innerHTML = `
-                    <div class="card">
-                        <div class="card-header"><span class="card-title">⚠️ Registrar Acto Inseguro (Amonestación)</span></div>
+                    <div class="login-box" style="margin:0 auto; max-width: 450px;">
+                        <h2 style="text-align:center; color: var(--accent-primary); margin-bottom:20px;">👤 Nuevo Usuario</h2>
+                        <input type="text" id="reg-nombre" placeholder="Nombre completo" class="pin-digit" style="width:100%; height:48px; text-align:left; padding:0 15px; margin-bottom:15px;">
+                        <input type="number" id="reg-pin" placeholder="PIN (4 dígitos)" class="pin-digit" style="width:100%; height:48px; text-align:left; padding:0 15px; margin-bottom:15px;">
+                        <select id="reg-rol" class="pin-digit" style="width:100%; height:48px; text-align:left; padding:0 15px; margin-bottom:20px;">
+                            <option value="LIDER">LIDER DE CUADRILLA</option>
+                            <option value="SEGURISTA">SEGURISTA</option>
+                            <option value="SUPERVISOR">SUPERVISOR</option>
+                            <option value="ADMIN">ADMINISTRADOR</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="App.submitAltaPersonal()" style="width:100%;">🚀 Registrar</button>
+                    </div>
+                `;
+            },
+
+            async submitAltaPersonal() {
+                const nombre = document.getElementById('reg-nombre').value.trim();
+                const pin = document.getElementById('reg-pin').value.trim();
+                const rol = document.getElementById('reg-rol').value;
+
+                if (!nombre || pin.length !== 4) return toast("❌ Datos incompletos", "error");
+
+                const btn = event.target;
+                btn.disabled = true; btn.innerText = "⏳ Guardando...";
+
+                const res = await gasCall('registrarUsuarioApp', { nombre, pin, rol, adminId: CONFIG.user.id });
+                if (res.success) {
+                    toast("✅ Usuario registrado");
+                    this.refreshData();
+                    this.navigate('alta-personal');
+                } else {
+                    toast("❌ Error: " + res.error, "error");
+                    btn.disabled = false; btn.innerText = "🚀 Registrar";
+                }
+            },
+
+            renderInspeccion() {
+                document.getElementById('topbarTitle').innerText = "Inspección de Herramientas";
+                document.getElementById('pageContent').innerHTML = `
+                    <div class="login-box" style="margin:0 auto; max-width: 500px;">
+                        <h2 style="margin-bottom:20px; text-align:center;">🔧 Nueva Inspección</h2>
                         <div class="form-group">
-                            <label class="form-label">Personal Involucrado *</label>
-                            <select class="form-select" id="aiPersonal">
-                                <option value="">Seleccione...</option>
-                                ${(DB.usuarios || []).map(p => `<option value="${p.id || p.ID}">${p.nombre || p.Nombre}</option>`).join('')}
+                            <label>Estado Herramientas</label>
+                            <select id="ins-estado" class="pin-digit" style="width:100%; height:48px; text-align:left; padding:0 15px;">
+                                <option value="Bueno">Bueno / Operativo</option>
+                                <option value="Regular">Regular / Con detalles</option>
+                                <option value="Malo">Malo / Retirar</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Tipo de Infracción *</label>
-                            <select class="form-select" id="aiTipo">
+                            <label>Descripción / Observación</label>
+                            <textarea id="ins-desc" class="pin-digit" style="width:100%; height:80px; padding:10px;"></textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="App.submitInspeccion()" style="width:100%;">💾 Guardar Inspección</button>
+                    </div>
+                `;
+            },
+
+            async submitInspeccion() {
+                const estado = document.getElementById('ins-estado').value;
+                const desc = document.getElementById('ins-desc').value;
+                const res = await gasCall('guardarInspeccionHerramienta', { estado, descripcion: desc, userId: CONFIG.user.id });
+                if (res.success) {
+                    toast("✅ Inspección guardada");
+                    this.navigate('dashboard');
+                } else {
+                    toast("❌ Error al guardar", "error");
+                }
+            },
+
+            renderActosInseguros() {
+                const usuarios = CONFIG.db.usuarios || [];
+                document.getElementById('topbarTitle').innerText = "Registro de Actos Inseguros";
+                document.getElementById('pageContent').innerHTML = `
+                    <div class="login-box" style="margin:0 auto; max-width: 500px;">
+                        <h2 style="margin-bottom:20px; text-align:center; color: var(--accent-danger);">⚠️ Nuevo Reporte</h2>
+                        <div class="form-group">
+                            <label>Persona Involucrada</label>
+                            <select id="acto-user" class="pin-digit" style="width:100%; height:48px; text-align:left; padding:0 15px;">
+                                ${usuarios.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Acto</label>
+                            <select id="acto-tipo" class="pin-digit" style="width:100%; height:48px; text-align:left; padding:0 15px;">
                                 <option value="Falta EPP">Falta EPP</option>
-                                <option value="Uso Incorrecto Herramienta">Uso Incorrecto Herramienta</option>
-                                <option value="Imprudencia">Imprudencia</option>
-                                <option value="Incumplimiento Procedimiento">Incumplimiento de Procedimiento</option>
+                                <option value="Herramienta Inadecuada">Herramienta Inadecuada</option>
+                                <option value="Zona Peligrosa">Zona Peligrosa</option>
                                 <option value="Otro">Otro</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Descripción *</label>
-                            <textarea class="form-textarea" id="aiDesc" placeholder="Describa el acto inseguro observado..."></textarea>
+                            <label>Evidencia / Detalle</label>
+                            <textarea id="acto-desc" class="pin-digit" style="width:100%; height:80px; padding:10px;"></textarea>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">Severidad</label>
-                            <select class="form-select" id="aiSeveridad">
-                                <option value="Leve">Leve</option>
-                                <option value="Grave">Grave</option>
-                                <option value="Muy Grave">Muy Grave</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-danger btn-block" onclick="Pages.submitActoInseguro()">⚠ Registrar Amonestación</button>
+                        <button class="btn btn-danger" onclick="App.submitActo()" style="width:100%;">⚠️ Registrar Amonestación</button>
                     </div>
                 `;
             },
 
-            async submitActoInseguro() {
-                const pers = document.getElementById('aiPersonal').value;
-                if (!pers) return App.toast('Seleccione personal', 'error');
-                const desc = document.getElementById('aiDesc').value;
-                if (!desc) return App.toast('Descripción requerida', 'error');
-
-                App.toast('Registrando amonestación...', 'info');
-                const res = await App.api('registrarAmonestacion', {
-                    personalId: pers,
-                    tipo: document.getElementById('aiTipo').value,
-                    desc: desc,
-                    severidad: document.getElementById('aiSeveridad').value,
-                    userId: App.user.id
-                });
+            async submitActo() {
+                const payload = {
+                    userIdInvolucrado: document.getElementById('acto-user').value,
+                    tipo: document.getElementById('acto-tipo').value,
+                    descripcion: document.getElementById('acto-desc').value,
+                    reportaId: CONFIG.user.id
+                };
+                const res = await gasCall('registrarAmonestacion', payload);
                 if (res.success) {
-                    App.toast('Amonestación registrada', 'success');
-                    App.refreshData();
-                    App.navigate('dashboard');
+                    toast("⚠️ Reporte enviado correctamente");
+                    this.navigate('dashboard');
+                } else {
+                    toast("❌ Error al enviar reporte", "error");
                 }
             },
 
-            'salud-ocupacional'() {
+            renderPatrullaje() {
+                document.getElementById('topbarTitle').innerText = "Nuevo Patrullaje";
                 document.getElementById('pageContent').innerHTML = `
-                    <div class="card">
-                        <div class="card-header"><span class="card-title">🩺 Programa de Salud</span></div>
-                        
+                    <div class="login-box" style="margin:0 auto; max-width: 500px;">
+                        <h2 style="margin-bottom:20px; text-align:center;">🛣️ Registro de Ruta</h2>
                         <div class="form-group">
-                            <label class="form-label">Tipo de Evento Médico</label>
-                            <select class="form-select" id="salTipo">
-                                <option value="Examen Ingreso">Examen de Ingreso</option>
-                                <option value="Examen Periodico">Examen Periódico</option>
-                                <option value="Consulta General">Consulta General</option>
-                                <option value="Antidoping">Antidoping</option>
+                            <label>Ubicación / Tramo</label>
+                            <input type="text" id="pat-loc" class="pin-digit" style="width:100%; height:48px; text-align:left; padding:0 15px;" placeholder="Km 45+200">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Hallazgo</label>
+                            <select id="pat-tipo" class="pin-digit" style="width:100%; height:48px; text-align:left; padding:0 15px;">
+                                <option value="Bache">Bache / Daño Carpeta</option>
+                                <option value="Basura">Basura / Maleza</option>
+                                <option value="Senal">Señalamiento Dañado</option>
+                                <option value="Accidente">Accidente Vial</option>
+                                <option value="Otro">Otro</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Personal *</label>
-                            <select class="form-select" id="salPersonal">
-                                <option value="">Seleccione...</option>
-                                ${(DB.usuarios || []).map(p => `<option value="${p.id || p.ID}">${p.nombre || p.Nombre}</option>`).join('')}
+                            <label>Detalle</label>
+                            <textarea id="pat-desc" class="pin-digit" style="width:100%; height:80px; padding:10px;"></textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="App.submitPatrullaje()" style="width:100%;">🚀 Reportar Patrullaje</button>
+                    </div>
+                `;
+            },
+
+            async submitPatrullaje() {
+                const payload = {
+                    ubicacion: document.getElementById('pat-loc').value,
+                    tipo: document.getElementById('pat-tipo').value,
+                    descripcion: document.getElementById('pat-desc').value,
+                    userId: CONFIG.user.id
+                };
+                const res = await gasCall('registrarPatrullaje', payload);
+                if (res.success) {
+                    toast("✅ Patrullaje registrado");
+                    this.navigate('dashboard');
+                } else {
+                    toast("❌ Error al reportar", "error");
+                }
+            },
+
+            renderHallazgos() {
+                const hallazgos = CONFIG.db.hallazgos || [];
+                document.getElementById('topbarTitle').innerText = "Seguimiento de Hallazgos";
+                document.getElementById('pageContent').innerHTML = `
+                    <div class="table-card">
+                        <table class="premium-table">
+                            <thead><tr><th>ID</th><th>Tipo</th><th>Estatus</th><th>Fecha</th></tr></thead>
+                            <tbody>
+                                ${hallazgos.map(h => `
+                                    <tr>
+                                        <td style="font-weight: 600;">${h.id || h.ID}</td>
+                                        <td>${h.tipo || h.Tipo}</td>
+                                        <td><span class="badge ${h.estado === 'Cerrado' ? 'badge-success' : 'badge-warning'}">${h.estado || h.Estado}</span></td>
+                                        <td>${h.fecha || '---'}</td>
+                                    </tr>
+                                `).join('') || '<tr><td colspan="4" style="text-align:center; padding:20px;">No hay hallazgos registrados</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            },
+
+            renderAccidentes() {
+                document.getElementById('topbarTitle').innerText = "Reporte de Emergencia / Accidentes";
+                document.getElementById('pageContent').innerHTML = `
+                    <div class="login-box" style="margin:0 auto; max-width: 500px; border: 2px solid var(--accent-danger);">
+                        <h2 style="margin-bottom:20px; text-align:center; color: var(--accent-danger);">🚨 Reportar Evento</h2>
+                        <div class="alert-strip" style="background: #fef2f2; border-left: 4px solid var(--accent-danger); padding: 12px; margin-bottom: 20px; color: #991b1b; font-size: 0.85rem;">
+                            <strong>¡ATENCIÓN!</strong> Priorice la seguridad del personal y primeros auxilios antes de reportar.
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Evento</label>
+                            <select id="acc-tipo" class="pin-digit" style="width:100%; height:48px; text-align:left; padding:0 15px;">
+                                <option value="Accidente">Accidente con Lesión</option>
+                                <option value="Incidente">Incidente (Sin Lesión)</option>
+                                <option value="Danios">Daños Materiales / Vehicular</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Diagnóstico / Aptitud *</label>
-                            <textarea class="form-textarea" id="salDiag" placeholder="Apto, No Apto, Observaciones médicas..."></textarea>
+                            <label>Descripción de los hechos</label>
+                            <textarea id="acc-desc" class="pin-digit" style="width:100%; height:100px; padding:10px;" placeholder="Relate lo sucedido con detalle..."></textarea>
                         </div>
-                         <div class="form-group">
-                            <label class="form-label">Próxima Revisión</label>
-                            <input type="date" class="form-input" id="salProx" value="${new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]}">
-                        </div>
-
-                        <button class="btn btn-primary btn-block" onclick="Pages.submitSalud()">💾 Guardar Registro Médico</button>
+                        <button class="btn btn-danger" onclick="App.submitAccidente()" style="width:100%;">🚑 Enviar Reporte Crítico</button>
                     </div>
                 `;
             },
 
-            async submitSalud() {
-                const tipo = document.getElementById('salTipo').value;
-                const personal = document.getElementById('salPersonal').value;
-                const diag = document.getElementById('salDiag').value;
-                const prox = document.getElementById('salProx').value;
-
-                if (!personal) return App.toast('Seleccione personal', 'error');
-                if (!diag) return App.toast('Diagnóstico requerido', 'error');
-
-                App.toast('Guardando registro médico...', 'info');
-                const res = await App.api('registrarSalud', {
-                    tipo, personalId: personal, diag, proxRevision: prox, userId: App.user.id
-                });
-
+            async submitAccidente() {
+                const payload = {
+                    tipo: document.getElementById('acc-tipo').value,
+                    descripcion: document.getElementById('acc-desc').value,
+                    userId: CONFIG.user.id
+                };
+                if (!payload.descripcion) return toast("⚠️ Ingrese una descripción", "error");
+                const res = await gasCall('crearIncidente', payload);
                 if (res.success) {
-                    App.toast('Registro de Salud Guardado', 'success');
-                    App.navigate('dashboard');
-                }
-            },
-
-            'simulacros'() {
-                document.getElementById('pageContent').innerHTML = `
-                    <div class="card">
-                        <div class="card-header"><span class="card-title">📢 Registro de Simulacro</span></div>
-                         
-                        <div class="form-group">
-                            <label class="form-label">Tipo de Emergencia Simulada</label>
-                            <select class="form-select" id="simTipo">
-                                <option value="Incendio">Incendio</option>
-                                <option value="Evacuacion">Evacuación Sismo</option>
-                                <option value="Derrame">Derrame de Hidrocarburos</option>
-                                <option value="Herido">Rescate de Herido</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Ubicación / Tramo</label>
-                            <input type="text" class="form-input" id="simUbi" placeholder="Ej. Km 12+500">
-                        </div>
-                         <div class="form-group">
-                            <label class="form-label">Participantes (Cuadrilla)</label>
-                            <div style="display:flex; gap:10px; flex-wrap:wrap; background:rgba(255,255,255,0.03); padding:10px; border-radius:8px">
-                                 ${(DB.usuarios || []).map(p => `
-                                    <label class="badge badge-gray" style="cursor:pointer; display:flex; align-items:center; gap:5px">
-                                        <input type="checkbox" class="sim-part" value="${p.id || p.ID}"> ${p.nombre || p.Nombre}
-                                    </label>`).join('')}
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Observaciones / Áreas de Mejora</label>
-                            <textarea class="form-textarea" id="simObs" placeholder="Tiempo de respuesta, errores cometidos..."></textarea>
-                        </div>
-
-                        <button class="btn btn-primary btn-block" onclick="Pages.submitSimulacro()">🚨 Registrar Simulacro</button>
-                    </div>
-                `;
-            },
-
-            async submitSimulacro() {
-                const tipo = document.getElementById('simTipo').value;
-                const ubi = document.getElementById('simUbi').value;
-                const obs = document.getElementById('simObs').value;
-                const parts = Array.from(document.querySelectorAll('.sim-part:checked')).map(c => c.value);
-
-                if (!ubi) return App.toast('Ubicación requerida', 'error');
-
-                App.toast('Registrando Simulacro...', 'info');
-                const res = await App.api('registrarSimulacro', {
-                    tipo, ubicacion: ubi, observaciones: obs, participantes: parts, userId: App.user.id
-                });
-
-                if (res.success) {
-                    App.toast('Simulacro Registrado. Folio: ' + res.id, 'success');
-                    App.navigate('dashboard');
-                }
-            },
-
-            'gestion-epp'() {
-                document.getElementById('pageContent').innerHTML = `
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Gestión de EPP</h3>
-                            <div style="display:flex; gap:10px">
-                                <button class="btn btn-primary btn-sm" onclick="Pages.renderEntregaEPP()">Entrega (Vale)</button>
-                                <button class="btn btn-secondary btn-sm" onclick="Pages.renderInspeccionEPP()">Inspección</button>
-                            </div>
-                        </div>
-                        <div id="eppContent" style="margin-top:20px">Seleccione una opción arriba</div>
-                    </div>
-                `;
-                Pages.renderEntregaEPP(); // Default view
-            },
-            renderEntregaEPP() {
-                const staff = DB.usuarios || [];
-                document.getElementById('eppContent').innerHTML = `
-                    <h4 style="margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:5px">Nueva Entrega de EPP</h4>
-                    <div class="form-group"><label class="form-label">Colaborador</label>
-                        <select class="form-select" id="eppPersonal">${staff.map(s => `<option value="${s.id || s.ID}">${s.nombre || s.Nombre} (${s.rol || s.Rol})</option>`).join('')}</select>
-                    </div>
-                    <div class="form-group"><label class="form-label">Tipo Entrega</label>
-                        <select class="form-select" id="eppTipo"><option>Nuevo Ingreso</option><option>Reposición por Daño</option><option>Reposición Natural</option></select>
-                    </div>
-                    <div class="form-group"><label class="form-label">Items a Entregar</label>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
-                            <label><input type="checkbox" class="chk-epp" value="Casco"> Casco</label>
-                            <label><input type="checkbox" class="chk-epp" value="Lentes"> Lentes</label>
-                            <label><input type="checkbox" class="chk-epp" value="Chaleco"> Chaleco</label>
-                            <label><input type="checkbox" class="chk-epp" value="Botas"> Botas</label>
-                            <label><input type="checkbox" class="chk-epp" value="Guantes"> Guantes</label>
-                            <label><input type="checkbox" class="chk-epp" value="Tapones"> Tapones</label>
-                        </div>
-                    </div>
-                    <div class="form-group"><label class="form-label">Motivo / Observaciones</label>
-                        <textarea class="form-textarea" id="eppMotivo" rows="2"></textarea>
-                    </div>
-                    <button class="btn btn-success btn-block" onclick="Pages.submitEntregaEPP()">REGISTRAR ENTREGA Y GENERAR VALE</button>
-                `;
-            },
-            renderInspeccionEPP() {
-                const staff = DB.usuarios || [];
-                document.getElementById('eppContent').innerHTML = `
-                    <h4 style="margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:5px">Inspección de EPP en Uso</h4>
-                    <div class="form-group"><label class="form-label">Colaborador Inspeccionado</label>
-                        <select class="form-select" id="insPersonal">${staff.map(s => `<option value="${s.id || s.ID}">${s.nombre || s.Nombre}</option>`).join('')}</select>
-                    </div>
-                    <table class="table" style="margin-bottom:15px">
-                        <thead><tr><th>Item</th><th>Estado</th></tr></thead>
-                        <tbody>
-                            ${['Casco', 'Lentes', 'Chaleco', 'Botas', 'Guantes'].map(i => `
-                                <tr>
-                                    <td>${i}</td>
-                                    <td>
-                                        <select class="form-select ins-item-val" data-item="${i}">
-                                            <option value="Bueno">✅ Bueno</option>
-                                            <option value="Malo">❌ Malo</option>
-                                            <option value="N/A">N/A</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                     <button class="btn btn-warning btn-block" onclick="Pages.submitInspeccionEPP()">REGISTRAR INSPECCIÓN</button>
-                `;
-            },
-            async submitEntregaEPP() {
-                const pers = document.getElementById('eppPersonal').value;
-                const items = Array.from(document.querySelectorAll('.chk-epp:checked')).map(c => ({ item: c.value, cantidad: 1 }));
-
-                if (!items.length) return App.toast('Seleccione al menos un item', 'error');
-
-                App.toast('Registrando Entrega...', 'info');
-                const res = await App.api('registrarEntregaEPP', {
-                    personalId: pers,
-                    tipoEntrega: document.getElementById('eppTipo').value,
-                    items: items,
-                    motivo: document.getElementById('eppMotivo').value,
-                    userId: App.user.id
-                });
-
-                if (res.success) {
-                    App.toast('Entrega registrada. Folio: ' + res.id, 'success');
-                    Pages['gestion-epp'](); // Reset view
-                }
-            },
-            async submitInspeccionEPP() {
-                const pers = document.getElementById('insPersonal').value;
-                const detalle = {};
-                let aprobados = 0;
-                let total = 0;
-
-                document.querySelectorAll('.ins-item-val').forEach(s => {
-                    if (s.value !== 'N/A') {
-                        detalle[s.dataset.item] = s.value;
-                        if (s.value === 'Bueno') aprobados++;
-                        total++;
-                    }
-                });
-
-                const estado = (total > 0 && aprobados === total) ? 'Aprobado' : 'No Aprobado';
-
-                App.toast('Registrando Inspección...', 'info');
-                const res = await App.api('registrarInspeccionEPP', {
-                    personalId: pers,
-                    estado: estado,
-                    detalle: detalle,
-                    userId: App.user.id
-                });
-
-                if (res.success) {
-                    App.toast('Inspección registrada: ' + estado, 'success');
-                    Pages['gestion-epp']();
-                }
-            },
-
-            'resguardo-inspeccion'() {
-                document.getElementById('pageContent').innerHTML = `
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Resguardo e Inspección de Recursos</h3>
-                            <div style="display:flex; gap:10px">
-                                <button class="btn btn-primary btn-sm" onclick="Pages.renderResguardo()">Asignar Resguardo</button>
-                                <button class="btn btn-secondary btn-sm" onclick="Pages.renderInspeccionRecurso()">Inspección Diaria</button>
-                            </div>
-                        </div>
-                        <div id="res-content" style="margin-top:20px">Seleccione opción...</div>
-                    </div>
-                `;
-                Pages.renderInspeccionRecurso(); // Default
-            },
-            renderResguardo() {
-                const staff = DB.usuarios || [];
-                document.getElementById('res-content').innerHTML = `
-                    <h4 style="margin-bottom:15px">Asignación de Activo (Resguardo)</h4>
-                    <div class="form-group"><label class="form-label">Tipo de Recurso</label>
-                        <select class="form-select" id="resTipo"><option>Vehiculo</option><option>Maquinaria Pesada</option><option>Herramienta Mayor</option></select>
-                    </div>
-                    <div class="form-group"><label class="form-label">Identificador (Placa / Serie)</label>
-                        <input type="text" class="form-input" id="resIdRecurso" placeholder="Ej. UP-102">
-                    </div>
-                    <div class="form-group"><label class="form-label">Asignar a:</label>
-                        <select class="form-select" id="resPersonal">${staff.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('')}</select>
-                    </div>
-                    <button class="btn btn-primary" onclick="Pages.submitResguardo()">ASIGNAR RESGUARDO</button>
-                `;
-            },
-            renderInspeccionRecurso() {
-                document.getElementById('res-content').innerHTML = `
-                    <h4 style="margin-bottom:15px">Checklist Pre-Operativo (Diario)</h4>
-                    <div class="form-group"><label class="form-label">ID Recurso (Placa/Económico)</label>
-                        <input type="text" class="form-input" id="insRecursoId" placeholder="Ej. MAQ-05">
-                    </div>
-                    <div class="form-group"><label class="form-label">Odómetro / Horómetro</label>
-                        <input type="number" class="form-input" id="insMedicion" placeholder="Km o Horas">
-                    </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:20px">
-                         ${['Niveles (Aceite/Agua)', 'Frenos', 'Luces/Torreta', 'Llantas/Orugas', 'Extintor', 'Alarma Reversa'].map(i => `
-                            <div>
-                                <label style="display:block; font-size:0.8rem; color:var(--text-secondary)">${i}</label>
-                                <select class="form-select ins-rec-check" data-aspect="${i}">
-                                    <option value="OK">✅ OK</option>
-                                    <option value="FALLA">❌ FALLA</option>
-                                </select>
-                            </div>
-                         `).join('')}
-                    </div>
-                    <div style="margin-bottom:20px">
-                        <label class="form-label">Evidencia Fotográfica (Opcional)</label>
-                        <input type="file" id="insFoto" accept="image/*" capture="environment" class="form-input">
-                    </div>
-                    <button class="btn btn-warning btn-block" onclick="Pages.submitInspeccionRecurso()">REGISTRAR INSPECCIÓN</button>
-                    
-                    <h5 style="margin-top:30px; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px">Mis Últimas Inspecciones</h5>
-                    <div id="ins-history" style="font-size:0.85rem; color:var(--text-secondary)">Cargando historial...</div>
-                `;
-
-                // Load History
-                App.api('getInspeccionesUsuario', App.user.id).then(res => {
-                    const c = document.getElementById('ins-history');
-                    if (res.success && res.data && res.data.length > 0) {
-                        c.innerHTML = res.data.map(p => `
-                            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:4px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center">
-                                <div>
-                                    <div style="font-weight:600; color:var(--text-primary)">${p.recurso}</div>
-                                    <div style="font-size:0.75rem">${p.fecha} · ${p.estado}</div>
-                                </div>
-                                <button class="btn btn-sm btn-primary" onclick="Pages.generarPDFInspeccion('${p.id}')">PDF</button>
-                            </div>
-                        `).join('');
-                    } else {
-                        c.innerHTML = 'No hay inspecciones recientes.';
-                    }
-                });
-            },
-            async generarPDFInspeccion(id) {
-                App.toast('Generando PDF...', 'info');
-                const res = await App.api('generarReporteInspeccion', id);
-                if (res.success) {
-                    const blob = Pages.b64toBlob(res.base64, 'application/pdf');
-                    const url = URL.createObjectURL(blob);
-                    window.open(url);
-                    App.toast('PDF Generado', 'success');
-                }
-            },
-            async submitResguardo() {
-                const recId = document.getElementById('resIdRecurso').value;
-                if (!recId) return App.toast('Ingrese ID del recurso', 'error');
-
-                App.toast('Asignando...', 'info');
-                const res = await App.api('registrarResguardo', {
-                    recursoId: recId,
-                    tipo: document.getElementById('resTipo').value,
-                    personalId: document.getElementById('resPersonal').value,
-                    userId: App.user.id
-                });
-                if (res.success) App.toast('Resguardo generado: ' + res.id, 'success');
-            },
-            async submitInspeccionRecurso() {
-                const recId = document.getElementById('insRecursoId').value;
-                const med = document.getElementById('insMedicion').value;
-                if (!recId || !med) return App.toast('Complete todos los campos', 'error');
-
-                const checklist = {};
-                let fallas = 0;
-                document.querySelectorAll('.ins-rec-check').forEach(s => {
-                    checklist[s.dataset.aspect] = s.value;
-                    if (s.value === 'FALLA') fallas++;
-                });
-
-                const estado = fallas > 0 ? 'Requiere Mantenimiento' : 'Operativo';
-
-                const fotoId = await App.uploadPhoto('insFoto');
-
-                App.toast('Enviando reporte...', 'info');
-                const res = await App.api('registrarInspeccionRecurso', {
-                    recursoId: recId,
-                    tipo: 'Vehiculo/Maquinaria',
-                    medicion: med,
-                    estado: estado,
-                    checklist: checklist,
-                    userId: App.user.id,
-                    fotoId: fotoId
-                });
-                if (res.success) {
-                    App.toast('Inspección registrada. Estado: ' + estado, fallas > 0 ? 'warning' : 'success');
-                    Pages['resguardo-inspeccion']();
-                }
-            },
-
-            'permisos-ambiental'() {
-                document.getElementById('pageContent').innerHTML = `
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Seguridad Industrial y Ambiental</h3>
-                            <div style="display:flex; gap:10px">
-                                <button class="btn btn-primary btn-sm" onclick="Pages.renderPermisoTrabajo()">Permiso de Trabajo</button>
-                                <button class="btn btn-secondary btn-sm" onclick="Pages.renderLogAmbiental()">Bitácora Ambiental</button>
-                            </div>
-                        </div>
-                        <div id="pa-content" style="margin-top:20px">Seleccione opción...</div>
-                    </div>
-                `;
-                Pages.renderPermisoTrabajo();
-            },
-            renderPermisoTrabajo() {
-                const staff = DB.usuarios || [];
-                document.getElementById('pa-content').innerHTML = `
-                    <h4 style="margin-bottom:15px">Autorización de Trabajos de Alto Riesgo</h4>
-                    <div class="form-group"><label class="form-label">Tipo de Trabajo</label>
-                        <select class="form-select" id="ptTipo"><option>Trabajo en Alturas</option><option>Trabajo en Caliente (Corte/Soldadura)</option><option>Espacios Confinados</option><option>Riesgo Eléctrico</option></select>
-                    </div>
-                    <div class="form-group"><label class="form-label">Ubicación Exacta</label>
-                        <input type="text" class="form-input" id="ptUbi" placeholder="Tramo, Estructura o Área">
-                    </div>
-                    <div class="form-group"><label class="form-label">Responsable de Ejecución</label>
-                        <select class="form-select" id="ptResp">${staff.map(s => `<option value="${s.id}">${s.nombre} (${s.rol})</option>`).join('')}</select>
-                    </div>
-                    <div class="form-group"><label class="form-label">Horario de Vigencia</label>
-                         <input type="text" class="form-input" id="ptVigencia" placeholder="Ej. 08:00 - 18:00 hrs">
-                    </div>
-                    <div style="margin-bottom:20px">
-                        <label class="form-label">Evidencia de Condiciones (Opcional)</label>
-                        <input type="file" id="ptFoto" accept="image/*" capture="environment" class="form-input">
-                    </div>
-                    <button class="btn btn-danger btn-block" onclick="Pages.submitPermiso()">AUTORIZAR Y GENERAR FOLIO</button>
-                    
-                    <h5 style="margin-top:30px; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px">Mis Últimos Permisos</h5>
-                    <div id="pt-history" style="font-size:0.85rem; color:var(--text-secondary)">Cargando historial...</div>
-                `;
-
-                // Load History
-                App.api('getPermisosUsuario', App.user.id).then(res => {
-                    const c = document.getElementById('pt-history');
-                    if (res.success && res.data && res.data.length > 0) {
-                        c.innerHTML = res.data.map(p => `
-                            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:4px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center">
-                                <div>
-                                    <div style="font-weight:600; color:var(--text-primary)">${p.id}</div>
-                                    <div style="font-size:0.75rem">${p.tipo} · ${p.fecha}</div>
-                                </div>
-                                <button class="btn btn-sm btn-primary" onclick="Pages.generarPDFPermiso('${p.id}')">PDF</button>
-                            </div>
-                        `).join('');
-                    } else {
-                        c.innerHTML = 'No hay permisos recientes.';
-                    }
-                });
-            },
-            async generarPDFPermiso(id) {
-                App.toast('Generando PDF...', 'info');
-                const res = await App.api('generarReportePermiso', id);
-                if (res.success) {
-                    const blob = Pages.b64toBlob(res.base64, 'application/pdf');
-                    const url = URL.createObjectURL(blob);
-                    window.open(url);
-                    App.toast('PDF Generado', 'success');
-                }
-            },
-            b64toBlob(b64Data, contentType) {
-                const sliceSize = 512;
-                const byteCharacters = atob(b64Data);
-                const byteArrays = [];
-                for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-                    const slice = byteCharacters.slice(offset, offset + sliceSize);
-                    const byteNumbers = new Array(slice.length);
-                    for (let i = 0; i < slice.length; i++) byteNumbers[i] = slice.charCodeAt(i);
-                    const byteArray = new Uint8Array(byteNumbers);
-                    byteArrays.push(byteArray);
-                }
-                return new Blob(byteArrays, { type: contentType });
-            },
-            renderLogAmbiental() {
-                document.getElementById('pa-content').innerHTML = `
-                    <h4 style="margin-bottom:15px">Registro de Residuos Peligrosos / Manejo Especial</h4>
-                    <div class="form-group"><label class="form-label">Clasificación</label>
-                         <select class="form-select" id="ambTipo"><option value="RP">Residuo Peligroso (RP)</option><option value="RME">Residuo de Manejo Especial (RME)</option><option value="RSU">Residuo Sólido Urbano</option></select>
-                    </div>
-                    <div class="form-group"><label class="form-label">Descripción del Residuo</label>
-                        <input type="text" class="form-input" id="ambDesc" placeholder="Ej. Estopa con aceite, Llantas, PET">
-                    </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                        <div class="form-group"><label class="form-label">Cantidad</label>
-                            <input type="number" class="form-input" id="ambCant">
-                        </div>
-                        <div class="form-group"><label class="form-label">Unidad</label>
-                              <select class="form-select" id="ambUnidad"><option>kg</option><option>lt</option><option>m3</option><option>pzas</option></select>
-                        </div>
-                    </div>
-                    <div class="form-group"><label class="form-label">Disposición</label>
-                         <select class="form-select" id="ambDisp"><option>Almacén Temporal</option><option>Recolección Autorizada</option><option>Disposición Final</option></select>
-                    </div>
-                     <div class="form-group"><label class="form-label">Folio Manifiesto (Si aplica)</label>
-                        <input type="text" class="form-input" id="ambManif" placeholder="Opcional">
-                    </div>
-                    <div style="margin-bottom:20px">
-                        <label class="form-label">Evidencia del Residuo (Opcional)</label>
-                        <input type="file" id="ambFoto" accept="image/*" capture="environment" class="form-input">
-                    </div>
-                    <button class="btn btn-success btn-block" onclick="Pages.submitAmbiental()">REGISTRAR EN BITÁCORA</button>
-                `;
-            },
-            async submitPermiso() {
-                const tipo = document.getElementById('ptTipo').value;
-                const ubi = document.getElementById('ptUbi').value;
-                const resp = document.getElementById('ptResp').value;
-                const vig = document.getElementById('ptVigencia').value;
-
-                if (!ubi || !vig) return App.toast('Complete todos los campos', 'error');
-
-                const fotoId = await App.uploadPhoto('ptFoto');
-
-                App.toast('Autorizando permiso...', 'info');
-                const res = await App.api('registrarPermisoTrabajo', {
-                    tipo: tipo, ubicacion: ubi, responsableIt: resp, vigencia: vig, userId: App.user.id, fotoId: fotoId
-                });
-                if (res.success) {
-                    App.toast('Permiso Autorizado: ' + res.id, 'success');
-                    Pages['permisos-ambiental']();
-                }
-            },
-            async submitAmbiental() {
-                const desc = document.getElementById('ambDesc').value;
-                const cant = document.getElementById('ambCant').value;
-                if (!desc || !cant) return App.toast('Faltan datos', 'error');
-
-                App.toast('Registrando residuo...', 'info');
-                const res = await App.api('registrarLogAmbiental', {
-                    tipoResiduo: document.getElementById('ambTipo').value + ' - ' + desc,
-                    cantidad: cant,
-                    unidad: document.getElementById('ambUnidad').value,
-                    disposicion: document.getElementById('ambDisp').value,
-                    manifiesto: document.getElementById('ambManif').value,
-                    userId: App.user.id
-                });
-                if (res.success) {
-                    App.toast('Registro Ambiental Exitoso: ' + res.id, 'success');
-                    Pages['permisos-ambiental']();
+                    toast("🚨 Reporte enviado. Los supervisores han sido notificados.");
+                    this.navigate('dashboard');
+                } else {
+                    toast("❌ Error al enviar reporte", "error");
                 }
             }
-
         };
 
-        App.init();
+        function toast(m, t = 'info') {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = `toast ${t}`;
+            el.innerHTML = `<span>${m}</span>`;
+            container.appendChild(el);
+            setTimeout(() => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                setTimeout(() => el.remove(), 400);
+            }, 4000);
+        }
+
+        function navigate(p) { App.navigate(p); }
+        function logout() { location.reload(); }
     </script>
 </body>
 
