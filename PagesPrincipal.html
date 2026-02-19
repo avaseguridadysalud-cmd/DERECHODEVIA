@@ -1,0 +1,418 @@
+<script>
+    /* ================================================================
+       PagesPrincipal.html — Dashboard, Control Desk, Producción, Personal, Reportes
+       ================================================================ */
+    Object.assign(Pages, {
+        'control-desk'() {
+            const totalActs = DB.actividades.length;
+            const enCurso = DB.actividades.filter(a => (a.Estado || a.estado) === 'En Curso').length;
+            const completadas = DB.actividades.filter(a => (a.Estado || a.estado) === 'Completada').length;
+            const hallAbiertas = DB.hallazgos.filter(h => (h.Estado || h.estado) === 'Abierto').length;
+
+            html('pageContent', `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Total Actividades</span>
+                        <span class="stat-value">${totalActs}</span>
+                    </div>
+                    <div class="stat-card" style="border-left-color:var(--accent-success)">
+                        <span class="stat-label">En Curso</span>
+                        <span class="stat-value" style="color:var(--accent-success)">${enCurso}</span>
+                    </div>
+                    <div class="stat-card" style="border-left-color:var(--accent-teal)">
+                        <span class="stat-label">Completadas</span>
+                        <span class="stat-value" style="color:var(--accent-teal)">${completadas}</span>
+                    </div>
+                    <div class="stat-card" style="border-left-color:var(--accent-orange)">
+                        <span class="stat-label">Hallazgos Abiertos</span>
+                        <span class="stat-value" style="color:var(--accent-orange)">${hallAbiertas}</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Actividades Recientes</span></div>
+                    ${DB.actividades.length ? `
+                    <div class="table-wrap">
+                        <table class="table">
+                            <thead><tr><th>ID</th><th>Tipo</th><th>Tramo</th><th>Líder</th><th>Estado</th></tr></thead>
+                            <tbody>
+                                ${DB.actividades.slice(-10).reverse().map(a => `
+                                    <tr>
+                                        <td>${a.ID || a.id || ''}</td>
+                                        <td>${a.Tipo || a.tipo || ''}</td>
+                                        <td>${getTramoName(a.Tramo || a.tramo)}</td>
+                                        <td>${getLiderName(a.Lider || a.lider)}</td>
+                                        <td><span class="badge ${(a.Estado || a.estado) === 'Completada' ? 'badge-green' : (a.Estado || a.estado) === 'En Curso' ? 'badge-blue' : 'badge-orange'}">${a.Estado || a.estado || ''}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    ` : '<p class="text-muted p-2">No hay actividades registradas.</p>'}
+                </div>
+            `);
+        },
+
+        'plan-trabajo'() {
+            // Datos semilla si está vacío
+            if (!DB.planTrabajo || DB.planTrabajo.length === 0) {
+                // Fallback: This will show empty state in template
+            }
+
+            html('pageContent', `
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <span class="card-title">Plan de Trabajo (Licitación)</span>
+                            <p style="color:var(--text-muted); font-size:0.8rem">F-GC-OP-01 · Periodo 2024</p>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="toast('Importando desde CSV/Excel...')">↑ Cargar Plan</button>
+                    </div>
+                    ${(DB.planTrabajo || []).length ? `
+                    <div class="table-wrap">
+                        <table class="table">
+                            <thead><tr><th>Concepto</th><th>Unidad</th><th>Meta</th><th>Ejecutado</th><th>Avance</th><th>Acciones</th></tr></thead>
+                            <tbody>
+                                ${(DB.planTrabajo || []).map(p => {
+                const av = Number(p.Avance) || 0;
+                const clr = av >= 100 ? 'var(--accent-success)' : av > 50 ? 'var(--accent-primary)' : 'var(--accent-warning)';
+                return `
+                                    <tr>
+                                        <td><strong>${p.TipoTrabajo}</strong></td>
+                                        <td>${p.UnidadMedida}</td>
+                                        <td>${p.CantidadProgramada}</td>
+                                        <td>${p.CantidadEjecutada}</td>
+                                        <td>
+                                            <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden">
+                                                <div style="width:${av}%; height:100%; background:${clr}"></div>
+                                            </div>
+                                            <small style="color:${clr}">${av}%</small>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-primary btn-sm" onclick="Pages.abrirModalAsignar('${p.ID}', '${p.TipoTrabajo}')">Asignar</button>
+                                        </td>
+                                    </tr>`;
+            }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    ` : '<p class="text-muted p-2">No hay plan de trabajo cargado.</p>'}
+                </div>
+            `);
+        },
+
+        abrirModalAsignar(planId, tipo) {
+            const tramos = DB.tramos && DB.tramos.length ? DB.tramos : [];
+            const lideres = DB.usuarios.filter(u => u.Rol === 'LIDER' || u.Rol === 'ADMIN');
+
+            openModal(`Asignar: ${tipo}`, `
+                <div class="form-group"><label class="form-label">Tramo de Operación</label>
+                    <select class="form-select" id="asTramo">${tramos.map(t => `<option value="${t.ID}">${t.Nombre || t.nombre}</option>`).join('')}</select>
+                </div>
+                <div class="form-group"><label class="form-label">Líder Responsable</label>
+                    <select class="form-select" id="asLider">${lideres.map(l => `<option value="${l.ID}">${l.Nombre}</option>`).join('')}</select>
+                </div>
+                <div class="form-row" style="display:grid; grid-template-columns: 1fr 1fr; gap:16px">
+                    <div class="form-group"><label class="form-label">Fecha Programada</label><input type="date" class="form-input" id="asFecha" value="${new Date().toISOString().split('T')[0]}"></div>
+                    <div class="form-group"><label class="form-label">Meta (Km/Pza)</label><input type="number" class="form-input" id="asMeta" value="10"></div>
+                </div>
+            `, `<button class="btn btn-primary btn-block" onclick="Pages.guardarAsignacion('${planId}', '${tipo}')">CONFIRMAR ASIGNACIÓN</button>`);
+        },
+
+        guardarAsignacion(planId, tipo) {
+            const datos = {
+                planId: planId,
+                tipo: tipo,
+                tramoId: $('asTramo').value,
+                liderId: $('asLider').value,
+                fecha: $('asFecha').value,
+                kmProg: $('asMeta').value,
+                adminId: App.currentUser.id
+            };
+
+            toast('Asignando actividad...', 'info');
+            gasCall('crearActividad', datos, (res) => {
+                if (res.success) {
+                    toast('¡Actividad Asignada con Folio ' + (res.id || 'GC-OP-001') + '!', 'success');
+                    closeModal();
+                    App.refreshData();
+                } else {
+                    toast('Error: ' + res.error, 'error');
+                }
+            });
+        },
+
+        'dashboard'() {
+            const kmProg = (DB.planTrabajo || []).reduce((s, i) => s + (Number(i.CantidadProgramada) || 0), 0);
+            const kmEjec = (DB.planTrabajo || []).reduce((s, i) => s + (Number(i.CantidadEjecutada) || 0), 0);
+            const pct = kmProg ? Math.round(kmEjec / kmProg * 100) : 0;
+            const hallAbiertas = DB.hallazgos.filter(h => (h.Estado || h.estado) === 'Abierto').length;
+            const swActivos = (DB.stopWork || []).filter(s => s.Estado === 'Activo').length;
+
+            html('pageContent', `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Avance General Contrato</span>
+                        <span class="stat-value" style="color:var(--accent-primary)">${pct}%</span>
+                        <div style="width:100%; height:6px; background:rgba(255,255,255,0.05); border-radius:10px; overflow:hidden; margin-top:8px;">
+                            <div style="width:${pct}%; height:100%; background:var(--accent-primary); box-shadow: 0 0 8px rgba(56,189,248,0.4); transition: width 0.5s;"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Km Ejecutados</span>
+                        <span class="stat-value">${kmEjec} <small style="font-size:0.7rem">/ ${kmProg}</small></span>
+                    </div>
+                    <div class="stat-card" style="border-left-color:var(--accent-danger)">
+                        <span class="stat-label">Hallazgos Abiertos</span>
+                        <span class="stat-value" style="color:var(--accent-danger)">${hallAbiertas}</span>
+                    </div>
+                    <div class="stat-card" style="border-left-color:var(--accent-warning)">
+                        <span class="stat-label">Stop Work Activos</span>
+                        <span class="stat-value" style="color:var(--accent-warning)">${swActivos}</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Plan de Trabajo — Resumen</span></div>
+                    ${(DB.planTrabajo || []).length ? `
+                    <div class="table-wrap">
+                        <table class="table">
+                            <thead><tr><th>Concepto</th><th>U.M.</th><th>Prog</th><th>Ejec</th><th>Avance</th><th>Estado</th></tr></thead>
+                            <tbody>
+                                ${(DB.planTrabajo || []).map(p => {
+                const av = Number(p.Avance) || 0;
+                const clr = av >= 100 ? 'var(--accent-success)' : av > 50 ? 'var(--accent-primary)' : 'var(--accent-warning)';
+                return `<tr>
+                                        <td><strong>${p.TipoTrabajo || p.Descripcion || ''}</strong></td>
+                                        <td>${p.UnidadMedida || 'km'}</td>
+                                        <td>${p.CantidadProgramada}</td>
+                                        <td>${p.CantidadEjecutada}</td>
+                                        <td><span style="color:${clr}; font-weight:700;">${av}%</span></td>
+                                        <td><span class="badge ${p.Estado === 'Completado' ? 'badge-green' : 'badge-blue'}">${p.Estado || 'Pendiente'}</span></td>
+                                    </tr>`;
+            }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    ` : '<p class="text-muted p-2">No hay plan de trabajo cargado.</p>'}
+                </div>
+            `);
+        },
+
+        'produccion'() {
+            const items = DB.planTrabajo || [];
+            html('pageContent', `
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                        <h2>📊 Plan de Producción</h2>
+                        <span class="badge badge-blue">${items.length} Conceptos</span>
+                    </div>
+                    <div style="display:grid; gap:16px;">
+                        ${items.map(item => {
+                const pct = Number(item.Avance) || 0;
+                const color = pct >= 100 ? 'var(--accent-success)' : pct > 50 ? 'var(--accent-primary)' : 'var(--accent-warning)';
+                return `
+                            <div style="background:rgba(15,23,42,0.4); padding:20px; border-radius:15px; border:1px solid var(--border-color);">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                                    <div>
+                                        <h4 style="color:#fff;">${item.TipoTrabajo}</h4>
+                                        <small style="color:var(--text-muted);">${item.Descripcion || ''}</small>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <span style="font-size:1.2rem; font-weight:800; color:${color};">${pct}%</span>
+                                        <div style="font-size:0.65rem; color:var(--text-muted);">AVANCE REAL</div>
+                                    </div>
+                                </div>
+                                <div style="width:100%; height:8px; background:rgba(255,255,255,0.05); border-radius:10px; overflow:hidden; margin:12px 0;">
+                                    <div style="width:${pct}%; height:100%; background:${color}; box-shadow: 0 0 10px ${color}; transition: width 0.5s;"></div>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                                    <span>Prog: <b>${item.CantidadProgramada} ${item.UnidadMedida}</b></span>
+                                    <span>Ejec: <b>${item.CantidadEjecutada} ${item.UnidadMedida}</b></span>
+                                    <button onclick="Pages.modalAvance('${item.ID}', '${item.TipoTrabajo}', ${item.CantidadEjecutada})"
+                                            style="background:transparent; border:1px solid var(--accent-primary); color:var(--accent-primary); padding:4px 12px; border-radius:6px; cursor:pointer; font-size:0.78rem;">
+                                        ✏️ Actualizar
+                                    </button>
+                                </div>
+                            </div>
+                            `;
+            }).join('') || '<p class="text-muted text-center">No hay plan de trabajo cargado.</p>'}
+                    </div>
+                </div>
+            `);
+        },
+
+        modalAvance(id, nombre, actual) {
+            const nuevaCant = prompt(`Actualizar ejecución para: ${nombre}\nCantidad actual: ${actual}`, actual);
+            if (nuevaCant !== null && nuevaCant !== "") {
+                gasCall('actualizarAvancePlan', { id, cantidadEjecutada: nuevaCant, userId: App.currentUser.id }, (res) => {
+                    if (res.success) { toast("✅ Producción actualizada"); App.refreshData(() => App.navigate('produccion')); }
+                    else toast("❌ Error: " + res.error, "error");
+                });
+            }
+        },
+
+        'actividades'() {
+            const acts = DB.actividades || [];
+            html('pageContent', `
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <h2>📝 Listado de Actividades</h2>
+                        <button class="btn btn-primary" onclick="Pages.formActividad()">+ Nueva</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="table">
+                            <thead><tr><th>ID</th><th>Tipo</th><th>Tramo</th><th>Fecha</th><th>Estado</th></tr></thead>
+                            <tbody>
+                                ${acts.slice().reverse().map(a => `
+                                    <tr>
+                                        <td>${a.ID || ''}</td>
+                                        <td>${a.Tipo || ''}</td>
+                                        <td>${getTramoName(a.Tramo)}</td>
+                                        <td>${a.Fecha || ''}</td>
+                                        <td><span class="badge ${(a.Estado) === 'Completada' ? 'badge-green' : (a.Estado) === 'En Curso' ? 'badge-blue' : 'badge-orange'}">${a.Estado || ''}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `);
+        },
+
+        formActividad() {
+            openModal('Nueva Actividad', `
+                <div class="form-group"><label class="form-label">Tramo *</label>
+                    <select class="form-select" id="fa-tramo">${DB.tramos.map(t => `<option value="${t.ID}">${t.Nombre || t.nombre}</option>`).join('')}</select>
+                </div>
+                <div class="form-group"><label class="form-label">Tipo *</label>
+                    <select class="form-select" id="fa-tipo">
+                        <option>Patrullaje</option><option>Chaponeo</option><option>Señalización</option><option>Bacheo</option><option>Mantenimiento General</option>
+                    </select>
+                </div>
+                <div class="form-group"><label class="form-label">Líder *</label>
+                    <select class="form-select" id="fa-lider">${DB.usuarios.filter(u => u.Rol === 'LIDER' || u.Rol === 'ADMIN').map(u => `<option value="${u.ID}">${u.Nombre}</option>`).join('')}</select>
+                </div>
+                <div class="form-group"><label class="form-label">Fecha</label><input type="date" class="form-input" id="fa-fecha" value="${todayStr()}"></div>
+                <div class="form-group"><label class="form-label">Km Programados</label><input type="number" class="form-input" id="fa-km" value="0"></div>
+            `, `<button class="btn btn-primary" onclick="Pages.submitActividad()">Crear Actividad</button>`);
+        },
+
+        submitActividad() {
+            gasCall('crearActividad', {
+                adminId: App.currentUser.id,
+                tramoId: $('fa-tramo').value,
+                tipo: $('fa-tipo').value,
+                liderId: $('fa-lider').value,
+                fecha: $('fa-fecha').value,
+                kmProg: $('fa-km').value
+            }, (res) => {
+                if (res.success) { toast('Actividad creada: ' + res.id); closeModal(); App.refreshData(() => App.navigate('actividades')); }
+            });
+        },
+
+        'alta-personal'() {
+            html('pageContent', `
+                <div class="card" style="max-width:600px; margin:0 auto;">
+                    <h2 style="margin-bottom:20px; text-align:center;">👤 Registro de Personal</h2>
+                    <div class="form-group">
+                        <label class="form-label">Nombre Completo *</label>
+                        <input type="text" id="reg-nombre" placeholder="Nombre completo" class="form-input">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">PIN de Acceso *</label>
+                            <input type="password" id="reg-pin" maxlength="4" placeholder="Ej: 1234" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Rol *</label>
+                            <select id="reg-rol" class="form-select">
+                                <option value="LIDER">Líder de Cuadrilla</option>
+                                <option value="SEGURISTA">Segurista</option>
+                                <option value="SUPERVISOR">Supervisor</option>
+                                <option value="ADMIN">Administrador</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Zona / Activo</label>
+                        <input type="text" id="reg-activo" placeholder="Ej: Zona Sur..." class="form-input">
+                    </div>
+                    <button class="btn btn-primary btn-block" onclick="Pages.submitAlta()">🚀 Registrar Colaborador</button>
+                </div>
+            `);
+        },
+
+        submitAlta() {
+            const payload = { nombre: $('reg-nombre').value, pin: $('reg-pin').value, rol: $('reg-rol').value, activo: $('reg-activo').value, adminId: App.currentUser.id };
+            if (!payload.nombre || !payload.pin) return toast("Nombre y PIN son obligatorios", "error");
+            gasCall('registrarUsuarioApp', payload, (res) => {
+                if (res.success) { toast("✅ Usuario registrado"); App.refreshData(() => App.navigate('control-desk')); }
+            });
+        },
+
+        'hallazgos'() {
+            const halls = DB.hallazgos || [];
+            html('pageContent', `
+                <div class="card">
+                    <div class="card-header"><span class="card-title">🔍 Hallazgos</span></div>
+                    ${halls.length ? `
+                    <div class="table-wrap">
+                        <table class="table">
+                            <thead><tr><th>ID</th><th>Tipo</th><th>Tramo</th><th>Fecha</th><th>Estado</th></tr></thead>
+                            <tbody>
+                                ${halls.slice().reverse().map(h => `
+                                    <tr>
+                                        <td>${h.ID || ''}</td>
+                                        <td>${h.Tipo || ''}</td>
+                                        <td>${getTramoName(h.Tramo)}</td>
+                                        <td>${h.Fecha || ''}</td>
+                                        <td><span class="badge ${h.Estado === 'Abierto' ? 'badge-red' : 'badge-green'}">${h.Estado}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    ` : '<p class="text-muted p-2">No hay hallazgos registrados.</p>'}
+                </div>
+            `);
+        },
+
+        'reportes'() {
+            html('pageContent', `
+                <div class="card">
+                    <h2>📄 Centro de Reportes</h2>
+                    <p class="text-muted mb-2">Seleccione el reporte a generar</p>
+                    <div class="stats-grid" style="grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));">
+                        <div class="stat-card" style="cursor:pointer" onclick="Pages.runPDF('avance')">
+                            <span class="stat-label">CONTRACTUAL</span><span class="stat-value" style="font-size:1rem">Reporte Mensual</span>
+                        </div>
+                        <div class="stat-card" style="cursor:pointer" onclick="Pages.runPDF('sasisopa')">
+                            <span class="stat-label">SGO</span><span class="stat-value" style="font-size:1rem">Dossier SASISOPA</span>
+                        </div>
+                        <div class="stat-card" style="cursor:pointer" onclick="Pages.runPDF('nom')">
+                            <span class="stat-label">CUMPLIMIENTO</span><span class="stat-value" style="font-size:1rem">Matriz NOM</span>
+                        </div>
+                    </div>
+                </div>
+            `);
+        },
+
+        runPDF(tipo) {
+            toast('Generando PDF...');
+            gasCall('generarReportePDF', { tipo }, (res) => {
+                if (res.success && res.url) { toast('Reporte generado', 'success'); window.open(res.url, '_blank'); }
+            });
+        },
+
+        'ayuda'() {
+            html('pageContent', `
+                <div class="card">
+                    <div class="card-title">📖 Guía del Sistema DmV Control v3.0</div>
+                    <p class="text-muted mt-1">Use el menú lateral para navegar entre los módulos. El sistema está diseñado para operar tanto en línea como en modo local.</p>
+                    <div class="alert-strip alert-blue mt-2"><strong>Tip:</strong> Si opera en modo local, los datos serán temporales.</div>
+                </div>
+            `);
+        }
+    });
+</script>

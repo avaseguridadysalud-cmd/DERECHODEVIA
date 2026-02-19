@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: 'Helvetica', sans-serif;
+            font-size: 10px;
+            color: #333;
+        }
+
+        .header {
+            width: 100%;
+            border-bottom: 2px solid #d32f2f;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .logo {
+            width: 120px;
+            float: left;
+        }
+
+        .title {
+            text-align: right;
+            float: right;
+        }
+
+        .title h1 {
+            margin: 0;
+            font-size: 16px;
+            color: #d32f2f;
+        }
+
+        .meta {
+            clear: both;
+            margin-top: 10px;
+            font-size: 9px;
+            color: #666;
+            text-align: right;
+        }
+
+        .section {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            background: #fdf2f2;
+            padding: 5px;
+            margin: -10px -10px 10px -10px;
+            border-bottom: 1px solid #eecaca;
+            color: #b71c1c;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9px;
+        }
+
+        th,
+        td {
+            border: 1px solid #eee;
+            padding: 6px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+
+        .signatures {
+            margin-top: 30px;
+            width: 100%;
+        }
+
+        .sig-box {
+            width: 30%;
+            display: inline-block;
+            border-top: 1px solid #333;
+            margin-right: 3%;
+            padding-top: 5px;
+            text-align: center;
+            font-size: 9px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="logo">
+            <!-- Logo placeholder or base64 injection here -->
+        </div>
+        <div class="title">
+            <h1>Reporte de Incidente / Accidente</h1>
+            <div>F-GC-HS-05 · Rev. 02</div>
+        </div>
+        <div class="meta">
+            Folio: <strong>
+                <?= meta.folio ?>
+            </strong><br>
+            Fecha Reporte:
+            <?= meta.fechaGen ?><br>
+            Reportado por:
+            <?= meta.generadoPor ?>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Detalles del Evento</div>
+        <table>
+            <tr>
+                <td width="20%"><strong>Tipo:</strong></td>
+                <td>
+                    <?= data.Tipo ?>
+                </td>
+                <td width="20%"><strong>Fecha del Suceso:</strong></td>
+                <td>
+                    <?= data.Fecha ?>
+                    <?= data.Hora || '' ?>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Lugar:</strong></td>
+                <td>
+                    <?= data.Lugar || 'En Trayecto / Sitio' ?>
+                </td>
+                <td><strong>Estado Actual:</strong></td>
+                <td>
+                    <?= data.Estado ?>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Descripción de los Hechos</div>
+        <p>
+            <?= data.Descripcion ?>
+        </p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Evaluación Inicial</div>
+        <table>
+            <tr>
+                <td width="30%"><strong>Personas Involucradas:</strong></td>
+                <td>
+                    <?= data.Involucrados || 'Sin datos' ?>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Lesiones / Daños:</strong></td>
+                <td>
+                    <?= data.LesionTipo || 'No aplica' ?>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Causa Inmediata (Preliminar):</strong></td>
+                <td>
+                    <?= data.CausaInmediata || 'Pendiente de Investigación' ?>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Acciones Inmediatas</div>
+        <ul>
+            <? var acciones = safeJSON(data.AccionesJSON); ?>
+            <? for (var i = 0; i < acciones.length; i++) { ?>
+            <li>
+                <?= acciones[i] ?>
+            </li>
+            <? } ?>
+            <? if (!acciones || acciones.length === 0) { ?>
+            <li>Se aseguró el área.</li>
+            <li>Se notificó al mando superior.</li>
+            <? } ?>
+        </ul>
+    </div>
+
+    <div class="signatures">
+        <div class="sig-box">
+            <strong>
+                <?= meta.generadoPor ?>
+            </strong><br>Reporta
+        </div>
+        <div class="sig-box">
+            <strong>Seguridad HSE</strong><br>Recibe e Investiga
+        </div>
+        <div class="sig-box">
+            <strong>Gerencia</strong><br>Enterado
+        </div>
+    </div>
+
+    <div style="margin-top:20px; font-size:8px; color:#999; text-align:center;">
+        Documento confidencial generado por el Sistema DmV Control. Su divulgación no autorizada está prohibida.
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            color: #333;
+            font-size: 12px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #005a9c;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            max-height: 60px;
+        }
+
+        .title {
+            text-align: right;
+        }
+
+        .title h2 {
+            margin: 0;
+            color: #005a9c;
+        }
+
+        .title span {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .section {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #f4f4f4;
+            padding: 8px 12px;
+            font-weight: bold;
+            border-bottom: 1px solid #ddd;
+            color: #333;
+        }
+
+        .section-body {
+            padding: 12px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .field {
+            margin-bottom: 5px;
+        }
+
+        .field label {
+            font-weight: bold;
+            display: block;
+            color: #555;
+            font-size: 11px;
+        }
+
+        .field span {
+            display: block;
+            border-bottom: 1px solid #eee;
+            padding: 2px 0;
+        }
+
+        .signatures {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .sig-box {
+            width: 40%;
+            border-top: 1px solid #333;
+            padding-top: 5px;
+        }
+
+        .photo-container {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .photo-container img {
+            max-width: 100%;
+            max-height: 300px;
+            border: 1px solid #ccc;
+            padding: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <img src="<?= logo ?>" class="logo" onerror="this.style.display='none'">
+        <div class="title">
+            <h2>Permiso de Trabajo de Alto Riesgo</h2>
+            <span>Folio:
+                <?= data.id ?>
+            </span>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">INFORMACIÓN GENERAL</div>
+        <div class="section-body">
+            <div class="grid">
+                <div class="field"><label>Fecha de Emisión</label><span>
+                        <?= data.fecha ?>
+                    </span></div>
+                <div class="field"><label>Vigencia Autorizada</label><span>
+                        <?= data.vigencia ?>
+                    </span></div>
+                <div class="field"><label>Ubicación / Área</label><span>
+                        <?= data.ubicacion ?>
+                    </span></div>
+                <div class="field"><label>Tipo de Trabajo</label><span>
+                        <?= data.tipo ?>
+                    </span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">RESPONSABILIDADES</div>
+        <div class="section-body">
+            <div class="grid">
+                <div class="field"><label>Solicitante / Responsable Ejecución</label><span>
+                        <?= data.responsableNombre ?> (
+                        <?= data.responsableIt ?>)
+                    </span></div>
+                <div class="field"><label>Autorizado Por (Seguridad)</label><span>
+                        <?= data.autorizo ?>
+                    </span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">EVIDENCIA DE CONDICIONES</div>
+        <div class="section-body">
+            <? if (data.fotoBase64) { ?>
+            <div class="photo-container">
+                <img src="data:image/jpeg;base64,<?= data.fotoBase64 ?>">
+                <p style="font-size:10px; color:#666; margin-top:5px">Evidencia fotográfica capturada al momento de la
+                    autorización.</p>
+            </div>
+            <? } else { ?>
+            <p style="text-align:center; color:#999; padding: 20px;">No se registró evidencia fotográfica.</p>
+            <? } ?>
+        </div>
+    </div>
+
+    <div class="signatures">
+        <div class="sig-box">
+            <strong>
+                <?= data.responsableNombre ?>
+            </strong><br>
+            Firma del Responsable
+        </div>
+        <div class="sig-box">
+            <strong>
+                <?= data.autorizo ?>
+            </strong><br>
+            Firma de Seguridad (Autoriza)
+        </div>
+    </div>
+
+    <div style="margin-top:20px; font-size:9px; color:#999; text-align:center">
+        Generado automáticamente por SGO DMV Control v3.0 | Fecha de Impresión:
+        <?= new Date().toLocaleString() ?>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            color: #333;
+            font-size: 11px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #e67e22;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            max-height: 60px;
+        }
+
+        .title {
+            text-align: right;
+        }
+
+        .title h2 {
+            margin: 0;
+            color: #e67e22;
+        }
+
+        .title span {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .section {
+            margin-bottom: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #fdf2e9;
+            padding: 6px 10px;
+            font-weight: bold;
+            border-bottom: 1px solid #fae5d3;
+            color: #d35400;
+            font-size: 11px;
+        }
+
+        .section-body {
+            padding: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .field {
+            margin-bottom: 4px;
+        }
+
+        .field label {
+            font-weight: bold;
+            display: block;
+            color: #7f8c8d;
+            font-size: 10px;
+        }
+
+        .field span {
+            display: block;
+            border-bottom: 1px solid #eee;
+            padding: 2px 0;
+            font-weight: 500;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+            margin-top: 5px;
+        }
+
+        th,
+        td {
+            border: 1px solid #eee;
+            padding: 4px 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #f9f9f9;
+            color: #555;
+        }
+
+        .status-ok {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-fail {
+            color: red;
+            font-weight: bold;
+            background: #ffebee;
+        }
+
+        .photo-container {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .photo-container img {
+            max-width: 100%;
+            max-height: 280px;
+            border: 1px solid #ccc;
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            text-align: center;
+            color: #999;
+            font-size: 9px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <img src="<?= logo ?>" class="logo" onerror="this.style.display='none'">
+        <div class="title">
+            <h2>Inspección de Recurso</h2>
+            <span>Folio:
+                <?= data.id ?>
+            </span>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">DATOS DEL VEHÍCULO / MAQUINARIA</div>
+        <div class="section-body">
+            <div class="grid">
+                <div class="field"><label>ID Recurso</label><span>
+                        <?= data.recursoId ?>
+                    </span></div>
+                <div class="field"><label>Fecha Inspección</label><span>
+                        <?= data.fecha ?>
+                    </span></div>
+                <div class="field"><label>Medición Actual</label><span>
+                        <?= data.medicion ?>
+                    </span></div>
+                <div class="field"><label>Estado General</label><span
+                        style="color: <?= data.estado === 'Operativo' ? 'green' : 'red' ?>">
+                        <?= data.estado ?>
+                    </span></div>
+                <div class="field"><label>Inspector / Operador</label><span>
+                        <?= data.inspector ?>
+                    </span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">RESULTADOS DEL CHECKLIST</div>
+        <div class="section-body">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="70%">Punto de Inspección</th>
+                        <th width="30%">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <? for(var key in data.checklist) { 
+                       var val = data.checklist[key];
+                       var icon = val ? '✅ OK' : '❌ FALLA';
+                       var cls = val ? 'status-ok' : 'status-fail';
+                    ?>
+                    <tr>
+                        <td>
+                            <?= key ?>
+                        </td>
+                        <td class="<?= cls ?>">
+                            <?= icon ?>
+                        </td>
+                    </tr>
+                    <? } ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">EVIDENCIA FOTOGRÁFICA</div>
+        <div class="section-body">
+            <? if (data.fotoBase64) { ?>
+            <div class="photo-container">
+                <img src="data:image/jpeg;base64,<?= data.fotoBase64 ?>">
+                <p style="font-size:10px; color:#666; margin-top:5px">Condición reportada al momento de la inspección.
+                </p>
+            </div>
+            <? } else { ?>
+            <p style="text-align:center; color:#999; padding: 15px;">Sin evidencia fotográfica adjunta.</p>
+            <? } ?>
+        </div>
+    </div>
+
+    <div class="footer">
+        Reporte generado por Sistema DmV Control |
+        <?= new Date().toLocaleString() ?>
+    </div>
+</body>
+
+</html>

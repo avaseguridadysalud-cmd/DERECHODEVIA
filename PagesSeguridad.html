@@ -1,0 +1,398 @@
+<script>
+    /* ================================================================
+       PagesSeguridad.html — Control de Riesgos y Cumplimiento v3.0
+       Incluye: AST Multifactorial, Inspecciones, Salud, Simulacros
+       ================================================================ */
+    Object.assign(Pages, {
+
+        // ====================================================================================
+        // 1. AST MULTIFACTORIAL (Tender Requirement: Detailed Risk Analysis per Phase)
+        // ====================================================================================
+        'ast-lider'() {
+            // Filtrar actividades asignadas al usuario O visibles para Segurista
+            const acts = DB.actividades.filter(a =>
+                (a.lider === App.currentUser.id || App.currentUser.rol === 'SEGURISTA' || App.currentUser.rol === 'SUPERVISOR') &&
+                (a.estado === 'Programada' || a.estado === 'En Curso' || !a.estado) // !a.estado fallback
+            );
+
+            html('pageContent', `
+                <div class="card">
+                    <div class="card-header"><span class="card-title">🛡️ AST Multifactorial (Digital)</span></div>
+                    <div class="alert-strip text-blue">
+                        <strong>Normativa:</strong> Identifique peligros y medidas de control para cada fase.
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Seleccione Actividad Programada *</label>
+                        <select class="form-select" id="astActividad">
+                            <option value="">-- Seleccionar --</option>
+                            ${acts.map(a => `<option value="${a.ID}">${a.ID} | ${a.Tipo} — ${getTramoName(a.Tramo)}</option>`).join('')}
+                        </select>
+                    </div>
+
+                    <div id="astMatrixContainer">
+                        <!-- Matriz dinámica de peligros -->
+                        <div class="ast-row" id="astRow1">
+                            <h4 style="margin:10px 0; border-bottom:1px solid #eee; font-size:14px; color:#002f6c;">Fase 1: Preparación del Sitio</h4>
+                            <div class="form-group"><input type="text" class="form-input" placeholder="Peligro (Ej. Fauna nociva, terreno irregular)" id="plg1"></div>
+                            <div class="form-row">
+                                <select class="form-select" id="rsg1"><option value="Bajo">Riesgo Bajo</option><option value="Medio">Riesgo Medio</option><option value="Alto">Riesgo Alto</option></select>
+                                <input type="text" class="form-input" placeholder="Control (Ej. Uso de polainas, bastón)" id="ctl1">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-secondary btn-sm" onclick="Pages.addASTRow()" style="margin-bottom:20px; width:100%">+ Agregar Fase / Peligro</button>
+
+                    <div class="form-group">
+                        <label class="form-label">Firmas de la Cuadrilla (Charla de 5 min)</label>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; background:#f9f9f9; padding:10px; border-radius:8px">
+                             ${(DB.personalCampo || []).map(p => `
+                                <label class="badge badge-gray" style="cursor:pointer; display:flex; align-items:center; gap:5px">
+                                    <input type="checkbox" class="ast-firma" value="${p.ID}"> ${p.Nombre || p.nombre}
+                                </label>`).join('')}
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-block" onclick="Pages.submitASTMulti()">✓ Validar y Firmar AST Digital</button>
+                    <div style="margin-top:20px; text-align:center">
+                        <small class="text-muted">La firma digital certifica la comprensión de riesgos (NOM-031-STPS).</small>
+                    </div>
+                </div>
+            `);
+        },
+
+        astRowCount: 1,
+        addASTRow() {
+            this.astRowCount++;
+            const div = document.createElement('div');
+            div.className = 'ast-row';
+            div.id = 'astRow' + this.astRowCount;
+            div.style.marginTop = '15px';
+            div.style.paddingTop = '15px';
+            div.style.borderTop = '1px dashed #ddd';
+            div.innerHTML = `
+                <h4 style="margin:10px 0; font-size:14px; color:#002f6c;">Fase ${this.astRowCount}: Ejecución</h4>
+                <div class="form-group"><input type="text" class="form-input" placeholder="Peligro Adicional" id="plg${this.astRowCount}"></div>
+                <div class="form-row">
+                    <select class="form-select" id="rsg${this.astRowCount}"><option value="Bajo">Riesgo Bajo</option><option value="Medio">Riesgo Medio</option><option value="Alto">Riesgo Alto</option></select>
+                    <input type="text" class="form-input" placeholder="Medida de Control" id="ctl${this.astRowCount}">
+                </div>
+            `;
+            document.getElementById('astMatrixContainer').appendChild(div);
+        },
+
+        submitASTMulti() {
+            const actId = $('astActividad').value;
+            if (!actId) return toast('Seleccione una actividad', 'error');
+
+            // Recolectar matriz
+            const peligros = [], riesgos = [], controles = [];
+            for (let i = 1; i <= this.astRowCount; i++) {
+                const p = $('plg' + i)?.value;
+                if (p) {
+                    peligros.push(p);
+                    riesgos.push($('rsg' + i).value);
+                    controles.push($('ctl' + i).value);
+                }
+            }
+
+            if (peligros.length === 0) return toast('Registre al menos un peligro y control', 'error');
+
+            const firmas = Array.from(document.querySelectorAll('.ast-firma:checked')).map(c => c.value);
+
+            const payload = {
+                actividadId: actId,
+                userId: App.currentUser.id,
+                peligros: peligros,
+                riesgos: riesgos,
+                controles: controles,
+                firmas: firmas,
+                geoLat: '',
+                geoLng: ''
+            };
+
+            // Geolocalización
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    payload.geoLat = pos.coords.latitude;
+                    payload.geoLng = pos.coords.longitude;
+                    this._sendAST(payload);
+                }, () => this._sendAST(payload));
+            } else {
+                this._sendAST(payload);
+            }
+        },
+
+        _sendAST(payload) {
+            if (!IS_GAS) {
+                toast('AST Multifactorial Guardado (Demo)');
+                App.navigate('dashboard');
+                return;
+            }
+
+            gasCall('saveASTMultifactorial', payload, (res) => {
+                if (res.success) {
+                    toast('AST Firmado y Aprobado. Folio: ' + res.id, 'success');
+                    // Opcional: ofrecer generar PDF inmediatamente
+                    if (confirm('¿Desea descargar el PDF del AST ahora?')) {
+                        Pages.generarPDF(res.id, 'AST');
+                    }
+                    App.refreshData(() => App.navigate('dashboard'));
+                } else {
+                    toast(res.error || 'Error al guardar AST', 'error');
+                }
+            });
+        },
+
+        // ====================================================================================
+        // 2. INSPECCION DE HERRAMIENTAS
+        // ====================================================================================
+        'inspeccion-herramientas'() {
+            html('pageContent', `
+                <div class="card">
+                    <div class="card-header"><span class="card-title">🔧 Inspección de Herramientas</span></div>
+                    <div class="form-group">
+                        <label class="form-label">Actividad Vinculada</label>
+                        <select class="form-select" id="ihActividad">
+                            <option value="">General (Sin actividad)</option>
+                            ${DB.actividades.filter(a => (a.estado || a.Estado) === 'En Curso').map(a =>
+                `<option value="${a.ID}">${a.Tipo} - ${getTramoName(a.Tramo)}</option>`
+            ).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descripción de la Inspección *</label>
+                        <textarea class="form-textarea" id="ihDesc" placeholder="Estado de herramientas, obsolescencia, daños..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estado General</label>
+                        <select class="form-select" id="ihEstado">
+                            <option value="Bueno">Bueno</option>
+                            <option value="Regular">Regular</option>
+                            <option value="Malo">Malo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Evidencia Fotográfica</label>
+                        <input type="file" class="form-input" id="ihEvidencia" accept="image/*" capture="environment">
+                    </div>
+                    <button class="btn btn-primary btn-block" onclick="Pages.submitInspeccionHerramientas()">✓ Guardar Inspección</button>
+                </div>
+            `);
+        },
+
+        submitInspeccionHerramientas() {
+            const desc = $('ihDesc').value;
+            const estado = $('ihEstado').value;
+            const actId = $('ihActividad').value;
+            if (!desc) return toast('Descripción requerida', 'error');
+
+            if (!IS_GAS) {
+                DB.inspecciones = DB.inspecciones || [];
+                DB.inspecciones.push({ ID: 'INS-' + Date.now(), Tipo: 'Herramienta', Descripcion: desc, Estado: estado, ActividadId: actId, Fecha: todayStr() });
+                toast('Inspección guardada (Demo)');
+                return;
+            }
+
+            gasCall('guardarInspeccionHerramienta', {
+                actividadId: actId,
+                descripcion: desc,
+                estado: estado,
+                userId: App.currentUser.id
+            }, (res) => {
+                toast('Inspección guardada');
+                App.refreshData(() => App.navigate('control-desk'));
+            });
+        },
+
+        // ====================================================================================
+        // 3. GENERADOR DE PDF (Nativo)
+        // ====================================================================================
+        generarPDF(id, tipo) {
+            toast('Generando PDF Nativo...', 'info');
+            if (!IS_GAS) return toast('PDF generado (Simulación)');
+
+            gasCall('generarReporteUnitario', { id, tipo, userId: App.currentUser.id }, (res) => {
+                if (res.success) {
+                    window.open(res.url, '_blank');
+                } else {
+                    toast('Error PDF: ' + res.error, 'error');
+                }
+            });
+        },
+
+        // ====================================================================================
+        // 4. ACTOS INSEGUROS
+        // ====================================================================================
+        'actos-inseguros'() {
+            html('pageContent', `
+                <div class="card">
+                    <div class="card-header"><span class="card-title">⚠️ Registrar Acto Inseguro (Amonestación)</span></div>
+                    <div class="form-group">
+                        <label class="form-label">Personal Involucrado *</label>
+                        <select class="form-select" id="aiPersonal">
+                            <option value="">Seleccione...</option>
+                            ${(DB.personalCampo || []).map(p => `<option value="${p.ID}">${p.Nombre || p.nombre}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Infracción *</label>
+                        <select class="form-select" id="aiTipo">
+                            <option value="Falta EPP">Falta EPP</option>
+                            <option value="Uso Incorrecto Herramienta">Uso Incorrecto Herramienta</option>
+                            <option value="Imprudencia">Imprudencia</option>
+                            <option value="Incumplimiento Procedimiento">Incumplimiento de Procedimiento</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descripción *</label>
+                        <textarea class="form-textarea" id="aiDesc" placeholder="Describa el acto inseguro observado..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Severidad</label>
+                        <select class="form-select" id="aiSeveridad">
+                            <option value="Leve">Leve</option>
+                            <option value="Grave">Grave</option>
+                            <option value="Muy Grave">Muy Grave</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Evidencia</label>
+                        <input type="file" class="form-input" id="aiEvidencia" accept="image/*" capture="environment">
+                    </div>
+                    <button class="btn btn-danger btn-block" onclick="Pages.submitActoInseguro()">⚠ Registrar Amonestación</button>
+                </div>
+            `);
+        },
+
+        submitActoInseguro() {
+            const pers = $('aiPersonal').value;
+            if (!pers) return toast('Seleccione personal', 'error');
+            const desc = $('aiDesc').value;
+            if (!desc) return toast('Descripción requerida', 'error');
+
+            if (!IS_GAS) {
+                DB.actosInseguros = DB.actosInseguros || [];
+                DB.actosInseguros.push({ ID: 'AI-' + Date.now(), PersonalId: pers, Tipo: $('aiTipo').value, Desc: desc, Severidad: $('aiSeveridad').value, Fecha: todayStr() });
+                toast('Amonestación registrada (Demo)');
+                return;
+            }
+
+            gasCall('registrarAmonestacion', {
+                personalId: pers,
+                tipo: $('aiTipo').value,
+                desc: desc,
+                severidad: $('aiSeveridad').value,
+                userId: App.currentUser.id
+            }, (res) => {
+                toast('Amonestación registrada');
+                App.refreshData(() => App.navigate('control-desk'));
+            });
+        },
+
+        // ====================================================================================
+        // 5. ACCIDENTES / INCIDENTES
+        // ====================================================================================
+        'accidentes'() {
+            html('pageContent', `
+                <div class="card">
+                    <div class="card-header"><span class="card-title">🚨 Reporte de Accidente / Incidente</span></div>
+                    <div class="alert-strip alert-red">
+                        <strong>IMPORTANTE:</strong> En caso de emergencia, active protocolos de primeros auxilios PRIMERO.
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Evento *</label>
+                        <select class="form-select" id="accTipo">
+                            <option value="Accidente">Accidente</option>
+                            <option value="Incidente">Incidente</option>
+                            <option value="Emergencia">Emergencia</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descripción de los hechos *</label>
+                        <textarea class="form-textarea" id="accDesc" rows="4" placeholder="Detalle circunstancias, personas involucradas, ubicación..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Personas Afectadas</label>
+                            <input type="number" class="form-input" id="accAfectados" value="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Primeros Auxilios</label>
+                            <select class="form-select" id="accPrimerosAux">
+                                <option value="No">No necesario</option>
+                                <option value="Si-Básico">Sí — Básicos</option>
+                                <option value="Si-Médico">Sí — Se requirió médico</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Evidencia Fotográfica</label>
+                        <input type="file" class="form-input" id="accEvidencia" accept="image/*" capture="environment">
+                    </div>
+                    <button class="btn btn-danger btn-block" onclick="Pages.submitAccidente()">🚑 Reportar Evento</button>
+                </div>
+            `);
+        },
+
+        submitAccidente() {
+            const tipo = $('accTipo').value;
+            const desc = $('accDesc').value;
+            if (!desc) return toast('Descripción requerida', 'error');
+
+            if (!IS_GAS) {
+                DB.incidentes = DB.incidentes || [];
+                DB.incidentes.push({ ID: 'INC-' + Date.now(), Tipo: tipo, Descripcion: desc, Fecha: todayStr(), Estado: 'Abierto' });
+                toast('Reporte de accidente enviado (Demo)');
+                App.navigate('control-desk');
+                return;
+            }
+
+            const fileInput = $('accEvidencia');
+            const doReport = () => {
+                gasCall('crearIncidente', {
+                    tipo: tipo,
+                    descripcion: desc,
+                    afectados: Number($('accAfectados').value) || 0,
+                    primerosAuxilios: $('accPrimerosAux').value,
+                    userId: App.currentUser.id,
+                    estado: 'Abierto'
+                }, (res) => {
+                    toast('Reporte enviado. Investigando...');
+                    App.refreshData(() => App.navigate('control-desk'));
+                });
+            };
+
+            if (fileInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    gasCall('subirEvidencia', { tipo: 'Accidente', entidadId: 'INC-' + Date.now(), foto: evt.target.result, userId: App.currentUser.id }, () => doReport());
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else { doReport(); }
+        },
+
+        // ====================================================================================
+        // 6. PROGRAMA DE SALUD Y SIMULACROS (Nuevos Módulos)
+        // ====================================================================================
+        'salud-ocupacional'() {
+            html('pageContent', `
+                <div class="card">
+                    <div class="card-header"><span class="card-title">🩺 Programa de Salud</span></div>
+                    <p style="text-align:center; padding:20px; color:#666">Módulo para registro de exámenes médicos de ingreso y periódicos (En Construcción)</p>
+                </div>
+            `);
+        },
+        'simulacros'() {
+            html('pageContent', `
+                <div class="card">
+                    <div class="card-header"><span class="card-title">📢 Simulacros de Emergencia</span></div>
+                    <button class="btn btn-primary" onclick="toast('Iniciando registro de simulacro...')">Registrar Simulacro</button>
+                </div>
+            `);
+        }
+
+    });
+</script>

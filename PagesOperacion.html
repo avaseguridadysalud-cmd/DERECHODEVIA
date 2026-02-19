@@ -1,0 +1,229 @@
+<script>
+    /* ================================================================
+       PagesOperacion.html — Mis Actividades, Inicio/Cierre Jornada, AST Digital
+       Basado en: index_FINAL.txt (líneas 381-624)
+       ================================================================ */
+    Object.assign(Pages, {
+        'mis-actividades'() {
+            const acts = DB.actividades.filter(a =>
+                (a.lider === App.currentUser.id || a.Lider === App.currentUser.id)
+            );
+            html('pageContent', `
+                <div class="card">
+                    <div class="card-header"><span class="card-title">🗂 Mis Actividades</span></div>
+                    ${acts.length ? `
+                    <div class="table-wrap">
+                        <table class="table">
+                            <thead><tr><th>Tipo</th><th>Tramo</th><th>Fecha</th><th>Estado</th></tr></thead>
+                            <tbody>
+                                ${acts.map(a => {
+                const est = a.Estado || a.estado || '';
+                const bg = est === 'Completada' ? 'badge-green' : est === 'En Curso' ? 'badge-blue' : 'badge-orange';
+                return `<tr>
+                                        <td>${a.Tipo || a.tipo || ''}</td>
+                                        <td>${getTramoName(a.Tramo || a.tramo)}</td>
+                                        <td>${a.Fecha || a.fecha || ''}</td>
+                                        <td><span class="badge ${bg}">${est}</span></td>
+                                    </tr>`;
+            }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    ` : '<p class="text-muted p-2">No tienes actividades asignadas hoy.</p>'}
+                </div>
+            `);
+        },
+
+        'iniciar-jornada'() {
+            const acts = DB.actividades.filter(a =>
+                (a.lider === App.currentUser.id || a.Lider === App.currentUser.id) &&
+                ((a.estado || a.Estado) === 'Programada' || (a.estado || a.Estado) === 'AST aprobado')
+            );
+            if (!acts.length) {
+                html('pageContent', `<div class="card"><div class="card-title">Iniciar Jornada</div><div class="alert-strip alert-orange">No hay actividades programadas para hoy.</div></div>`);
+                return;
+            }
+            html('pageContent', `
+                <div class="card">
+                    <div class="card-header"><span class="card-title">🏁 Iniciar Jornada</span></div>
+                    <div class="form-group">
+                        <label class="form-label">Actividad a iniciar *</label>
+                        <select class="form-select" id="ijActividad">
+                            <option value="">Seleccione actividad...</option>
+                            ${acts.map(a => `<option value="${a.ID || a.id}">${(a.Tipo || a.tipo)} - ${getTramoName(a.Tramo || a.tramo)} (${a.Estado || a.estado})</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">¿Segurista presente? *</label>
+                        <select class="form-select" id="ijSegurista">
+                            <option value="true">Sí</option><option value="false">No</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Personal presente</label>
+                        <div id="ijPersonalList" style="max-height:150px; overflow-y:auto; border:1px solid var(--border-color); border-radius:var(--radius-sm);">
+                            ${(DB.personalCampo || []).map(p => `
+                                <label style="display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--border-color);">
+                                    <input type="checkbox" class="ij-check-pers" value="${p.ID}">
+                                    ${p.Nombre || p.nombre} — ${p.Puesto || p.puesto || 'Sin puesto'}
+                                </label>
+                            `).join('') || '<p class="text-muted p-1">No hay personal registrado.</p>'}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Evidencia inicial (Foto del área)</label>
+                        <input type="file" class="form-input" id="ijEvidencia" accept="image/*" capture="environment">
+                        <div id="ijPreview" class="mt-1"></div>
+                    </div>
+                    <button class="btn btn-primary btn-block" onclick="Pages.submitInicioJornada()">▶ Iniciar Actividad</button>
+                </div>
+            `);
+            $('ijEvidencia').addEventListener('change', function () {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => { $('ijPreview').innerHTML = `<img src="${e.target.result}" style="width:80px; height:80px; object-fit:cover; border-radius:6px;">`; };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        },
+
+        submitInicioJornada() {
+            const actId = $('ijActividad').value;
+            if (!actId) return toast('Seleccione una actividad', 'error');
+            const haySegurista = $('ijSegurista').value === 'true';
+            const asistentes = Array.from(document.querySelectorAll('.ij-check-pers:checked')).map(c => c.value);
+            const fileInput = $('ijEvidencia');
+
+            const doStart = () => {
+                gasCall('iniciarActividad', { id: actId, userId: App.currentUser.id }, (res) => {
+                    if (res.success) { toast('Jornada iniciada correctamente'); App.refreshData(() => App.navigate('mis-actividades')); }
+                    else toast(res.error || 'Error al iniciar', 'error');
+                });
+            };
+
+            gasCall('guardarAsistencia', { actividadId: actId, userId: App.currentUser.id, haySegurista, asistentes }, () => {
+                if (fileInput.files.length > 0) {
+                    const reader = new FileReader();
+                    reader.onload = (evt) => {
+                        gasCall('subirEvidencia', { tipo: 'InicioJornada', entidadId: actId, foto: evt.target.result, userId: App.currentUser.id }, () => doStart());
+                    };
+                    reader.readAsDataURL(fileInput.files[0]);
+                } else { doStart(); }
+            });
+        },
+
+        'cierre-jornada'() {
+            const acts = DB.actividades.filter(a =>
+                ((a.lider === App.currentUser.id || a.Lider === App.currentUser.id) || App.currentUser.rol === 'SEGURISTA') &&
+                (a.estado === 'En Curso' || a.Estado === 'En Curso')
+            );
+            if (!acts.length) {
+                html('pageContent', `<div class="card"><div class="card-title">Cierre de Jornada</div><div class="alert-strip alert-orange">No hay actividades en curso.</div></div>`);
+                return;
+            }
+            const isSegurista = App.currentUser.rol === 'SEGURISTA';
+            html('pageContent', `
+                <div class="card">
+                    <div class="card-header"><span class="card-title">🏁 Cierre de Jornada ${isSegurista ? '(Segurista)' : ''}</span></div>
+                    ${!isSegurista ? `
+                    <div class="form-group">
+                        <label class="form-label">Actividad a cerrar *</label>
+                        <select class="form-select" id="cjActividad">
+                            <option value="">Seleccione...</option>
+                            ${acts.map(a => `<option value="${a.ID || a.id}">${(a.Tipo || a.tipo)} - ${getTramoName(a.Tramo || a.tramo)}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Km Finales Alcanzados</label>
+                        <input type="number" class="form-input" id="cjKm" placeholder="Km final">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Evidencia Final</label>
+                        <input type="file" class="form-input" id="cjEvidencia" accept="image/*" capture="environment">
+                    </div>
+                    ` : ''}
+                    <div class="form-group">
+                        <label class="form-label">${isSegurista ? 'Observaciones Finales del Segurista' : 'Observaciones / Comentarios'}</label>
+                        <textarea class="form-textarea" id="cjObs" placeholder="${isSegurista ? 'Condiciones inseguras, conclusiones de seguridad...' : 'Comentarios finales de la jornada'}"></textarea>
+                    </div>
+                    <button class="btn btn-primary btn-block" onclick="Pages.submitCierreJornada()">✓ Finalizar</button>
+                </div>
+            `);
+        },
+
+        submitCierreJornada() {
+            const isSegurista = App.currentUser.rol === 'SEGURISTA';
+            if (!isSegurista) {
+                const actId = $('cjActividad').value;
+                if (!actId) return toast('Seleccione actividad', 'error');
+                const kmReal = Number($('cjKm').value) || 0;
+                const obs = $('cjObs').value;
+
+                if (obs) gasCall('guardarObservacion', { actividadId: actId, observacion: obs, tipo: 'Lider', userId: App.currentUser.id }, () => { });
+
+                const fileInput = $('cjEvidencia');
+                const doComplete = () => {
+                    gasCall('completarActividad', { id: actId, userId: App.currentUser.id, observaciones: obs, kmRealizados: kmReal }, (res) => {
+                        if (res.success) { toast('Jornada cerrada y actividad completada'); App.refreshData(() => App.navigate('mis-actividades')); }
+                        else toast(res.error || 'Error al cerrar', 'error');
+                    });
+                };
+
+                if (fileInput.files.length > 0) {
+                    const reader = new FileReader();
+                    reader.onload = (evt) => {
+                        gasCall('subirEvidencia', { tipo: 'CierreJornada', entidadId: actId, foto: evt.target.result, userId: App.currentUser.id }, () => doComplete());
+                    };
+                    reader.readAsDataURL(fileInput.files[0]);
+                } else { doComplete(); }
+            } else {
+                const obs = $('cjObs').value;
+                if (obs) toast('Observaciones guardadas');
+                App.navigate('mis-actividades');
+            }
+        },
+
+        'ast-lider'() {
+            const misActs = DB.actividades.filter(a =>
+                (a.lider === App.currentUser.id || a.Lider === App.currentUser.id) &&
+                ((a.estado || a.Estado) === 'Programada' || (a.estado || a.Estado) === 'En Curso')
+            );
+            html('pageContent', `
+                <div class="card">
+                    <div class="card-header"><span class="card-title">📋 AST Digital (Análisis de Seguridad en el Trabajo)</span></div>
+                    <div class="form-group"><label class="form-label">Actividad *</label>
+                        <select class="form-select" id="fAstAct">
+                            <option value="">Seleccione...</option>
+                            ${misActs.map(a => `<option value="${a.ID || a.id}">${(a.Tipo || a.tipo)} — ${getTramoName(a.Tramo || a.tramo)}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group"><label class="form-label">Peligros Identificados</label>
+                        <textarea class="form-textarea" id="fAstPeligros" placeholder="Liste los peligros observados..."></textarea>
+                    </div>
+                    <div class="form-group"><label class="form-label">Riesgos Asociados</label>
+                        <textarea class="form-textarea" id="fAstRiesgos" placeholder="Riesgos relacionados..."></textarea>
+                    </div>
+                    <div class="form-group"><label class="form-label">Medidas de Control</label>
+                        <textarea class="form-textarea" id="fAstControles" placeholder="Medidas de prevención y control..."></textarea>
+                    </div>
+                    <button class="btn btn-primary btn-block" onclick="Pages.saveAST()">✓ Firmar AST</button>
+                </div>
+            `);
+        },
+
+        saveAST() {
+            const id = $('fAstAct').value;
+            if (!id) return toast('Seleccione actividad', 'error');
+            gasCall('guardarAST', {
+                actividadId: id,
+                userId: App.currentUser.id,
+                rol: App.currentUser.rol,
+                peligros: $('fAstPeligros').value,
+                riesgos: $('fAstRiesgos').value,
+                controles: $('fAstControles').value
+            }, (res) => {
+                if (res.success) { toast('AST firmado correctamente'); App.refreshData(() => App.navigate('mis-actividades')); }
+            });
+        }
+    });
+</script>

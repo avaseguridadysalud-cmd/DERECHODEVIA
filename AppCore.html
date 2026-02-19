@@ -1,0 +1,453 @@
+<script>
+    /* ================================================================
+       AppCore.html — Motor central JS DmV Control v3.0
+       Contiene: DB, App, gasCall, helpers
+       Basado en: index_FINAL.txt + seed original
+       ================================================================ */
+
+    const DB = {
+        usuarios: [], tramos: [], actividades: [], patrullajes: [], hallazgos: [],
+        ast: [], stopWork: [], capacitaciones: [], aptMedicas: [], inspecciones: [],
+        permisosTrabajo: [], emergencias: [], programaSalud: [], auditorias: [],
+        listadoMaestro: [], incidentes: [], platicas: [], entregaEPP: [],
+        personalCampo: [], inventario: [], valesHerramienta: [], movimientosInventario: [],
+        actosInseguros: [], condicionesInseguras: [], planTrabajo: [],
+        sasisopa: [
+            { id: 'S01', elemento: '1. Política de seguridad', cumplimiento: 0 },
+            { id: 'S02', elemento: '2. Identificación de peligros y análisis de riesgo', cumplimiento: 0 },
+            { id: 'S03', elemento: '3. Marco normativo y regulatorio', cumplimiento: 0 },
+            { id: 'S04', elemento: '4. Competencia del personal', cumplimiento: 0 },
+            { id: 'S05', elemento: '5. Integridad mecánica', cumplimiento: 0 },
+            { id: 'S06', elemento: '6. Seguridad en contratistas', cumplimiento: 0 },
+            { id: 'S07', elemento: '7. Procedimientos operativos', cumplimiento: 0 },
+            { id: 'S08', elemento: '8. Administración del cambio', cumplimiento: 0 },
+            { id: 'S09', elemento: '9. Plan de respuesta a emergencias', cumplimiento: 0 },
+            { id: 'S10', elemento: '10. Monitoreo, verificación y evaluación', cumplimiento: 0 },
+            { id: 'S11', elemento: '11. Auditorías', cumplimiento: 0 },
+            { id: 'S12', elemento: '12. Investigación de incidentes', cumplimiento: 0 },
+            { id: 'S13', elemento: '13. Revisión por la dirección', cumplimiento: 0 },
+            { id: 'S14', elemento: '14. Información y documentación', cumplimiento: 0 },
+            { id: 'S15', elemento: '15. Mejora continua', cumplimiento: 0 },
+            { id: 'S16', elemento: '16. Control operativo', cumplimiento: 0 },
+            { id: 'S17', elemento: '17. Diseño de instalaciones', cumplimiento: 0 },
+            { id: 'S18', elemento: '18. Comunicación y participación', cumplimiento: 0 },
+        ],
+        epp: [
+            { puesto: 'Supervisor de Campo', items: ['Casco', 'Lentes', 'Guantes', 'Botas', 'Chaleco', 'Radio', 'Protección auditiva'] },
+            { puesto: 'Segurista HSE', items: ['Casco', 'Lentes', 'Guantes', 'Botas', 'Chaleco', 'Detector de gas', 'Protección auditiva', 'Botiquín'] },
+            { puesto: 'Líder de Cuadrilla', items: ['Casco', 'Lentes', 'Guantes', 'Botas', 'Chaleco', 'Protección auditiva'] },
+            { puesto: 'Patrullero', items: ['Casco', 'Lentes', 'Botas', 'Chaleco'] },
+            { puesto: 'Ayudante General', items: ['Casco', 'Lentes', 'Guantes', 'Botas', 'Chaleco'] },
+        ],
+        nomMatriz: [
+            { nom: 'NOM-020-ASEA-2016', titulo: 'Transporte de gas natural por ducto — DmV', modulo: 'Patrullajes, Hallazgos, AST', cumplimiento: 0, estado: 'Pendiente' },
+            { nom: 'NOM-001-STPS-2008', titulo: 'Condiciones de seguridad — Edificios y áreas', modulo: 'Inspecciones, Hallazgos', cumplimiento: 0, estado: 'Pendiente' },
+            { nom: 'NOM-002-STPS-2010', titulo: 'Prevención y protección contra incendios', modulo: 'Inspecciones, Emergencias, Capacitaciones', cumplimiento: 0, estado: 'Pendiente' },
+            { nom: 'NOM-017-STPS-2008', titulo: 'Equipo de protección personal', modulo: 'Entrega EPP, Inspecciones EPP', cumplimiento: 0, estado: 'Pendiente' },
+            { nom: 'NOM-030-STPS-2009', titulo: 'Servicios preventivos de seguridad y salud', modulo: 'Programa Salud, Aptitudes, Capacitaciones', cumplimiento: 0, estado: 'Pendiente' },
+        ],
+        kpis: { astRealizados: 0, astProgramados: 0, capVigentes: 0, capTotal: 0, aptVigentes: 0, aptTotal: 0, obsPreventivas: 0, incidentes: 0, accidentes: 0, diasPerdidos: 0, stopWorkCount: 0 },
+        catalogoActividades: [],
+        planCapacitacion: [],
+        bancoPlaticas: [],
+        auditLog: [],
+        catalogoActivos: []
+    };
+
+    const IS_GAS = (typeof google !== 'undefined' && typeof google.script !== 'undefined');
+
+    // --- Helpers ---
+    function $(id) { return document.getElementById(id); }
+    function html(el, content) { if (typeof el === 'string') el = $(el); if (el) el.innerHTML = content; }
+    function todayStr() { return new Date().toISOString().split('T')[0]; }
+
+    function toast(msg, type = 'success') {
+        const container = $('toastContainer');
+        if (!container) return;
+        const t = document.createElement('div');
+        t.className = `toast toast-${type}`;
+        t.textContent = msg;
+        container.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 3500);
+    }
+
+    function openModal(title, bodyHTML, footerHTML = '') {
+        const overlay = $('modalOverlay');
+        $('modalContent').innerHTML = `
+            <div class="modal-header"><span class="modal-title">${title}</span><button class="modal-close" onclick="closeModal()">✕</button></div>
+            <div class="modal-body">${bodyHTML}</div>
+            ${footerHTML ? `<div class="modal-footer">${footerHTML}</div>` : ''}
+        `;
+        overlay.classList.add('active');
+    }
+    function closeModal() { $('modalOverlay').classList.remove('active'); }
+
+    function getTramoName(id) { return (DB.tramos.find(t => t.id === id || t.ID === id) || {}).nombre || (DB.tramos.find(t => t.id === id || t.ID === id) || {}).Nombre || id; }
+    function getLiderName(id) { return (DB.usuarios.find(u => u.id === id || u.ID === id) || {}).nombre || (DB.usuarios.find(u => u.id === id || u.ID === id) || {}).Nombre || id; }
+
+    /* ================================================================
+       LOCAL ENGINE — Persiste en localStorage, simula backend
+       ================================================================ */
+    const LS_KEY = 'dmv_control_db';
+
+    function localSave() {
+        try { localStorage.setItem(LS_KEY, JSON.stringify(DB)); } catch (e) { console.warn('localStorage lleno', e); }
+    }
+
+    function localLoad() {
+        try {
+            const raw = localStorage.getItem(LS_KEY);
+            if (raw) {
+                const saved = JSON.parse(raw);
+                Object.keys(saved).forEach(k => { if (DB.hasOwnProperty(k)) DB[k] = saved[k]; });
+                return true;
+            }
+        } catch (e) { console.warn('Error leyendo localStorage', e); }
+        return false;
+    }
+
+    function localSeed() {
+        // Solo se ejecuta la primera vez (sin datos en localStorage)
+        // ALINEADO CON PROYECTO DMV - ANEXO 1
+        // Corrección: Supervisores y Líderes específicos por Activo
+        DB.usuarios = [
+            { ID: 'U001', Nombre: 'Sergio A. Jiménez', Rol: 'ADMIN', PIN: '1234', Iniciales: 'SJ', Activo: true, Puesto: 'Gerente de Proyecto', activoAsignado: 'TODOS' },
+            { ID: 'U002', Nombre: 'Carlos Mendoza', Rol: 'SUPERVISOR', PIN: '2222', Iniciales: 'CM', Activo: true, Puesto: 'Supervisor de Campo', activoAsignado: 'ACT-02' }, // Solo DEN
+            { ID: 'U003', Nombre: 'Laura García', Rol: 'SEGURISTA', PIN: '3333', Iniciales: 'LG', Activo: true, Puesto: 'Segurista HSE', activoAsignado: 'TODOS' },
+            { ID: 'U004', Nombre: 'Pedro Hernández', Rol: 'LIDER', PIN: '4444', Iniciales: 'PH', Activo: true, Puesto: 'Líder (Tramo GDN)', activoAsignado: 'ACT-01' },
+            { ID: 'U005', Nombre: 'Miguel Ángel López', Rol: 'LIDER', PIN: '5555', Iniciales: 'ML', Activo: true, Puesto: 'Líder (Tramo DEN)', activoAsignado: 'ACT-02' }, // Todo DEN
+            { ID: 'U007', Nombre: 'Ana Martínez', Rol: 'LIDER', PIN: '7777', Iniciales: 'AM', Activo: true, Puesto: 'Líder (Tramo GDT)', activoAsignado: 'ACT-03' }
+        ];
+
+        // TRAMOS REALES
+        DB.tramos = [
+            { ID: 'TRAMO_GDN_01', Nombre: 'Tramo Único GDN', ActivoID: 'ACT-01', KmInicio: 0, KmFin: 116.78, Valvulas: 'MLV-01011 a MLV-01013' },
+            { ID: 'TRAMO_DEN_01', Nombre: 'Tramo Norte DEN', ActivoID: 'ACT-02', KmInicio: 0, KmFin: 184.50, Valvulas: 'MLV-2011 a MLV-2111' },
+            { ID: 'TRAMO_DEN_02', Nombre: 'Tramo Sur DEN', ActivoID: 'ACT-02', KmInicio: 184.50, KmFin: 452.46, Valvulas: 'MLV-2212 a MLV-2215' },
+            { ID: 'TRAMO_GDT_01', Nombre: 'Tramo Único GDT', ActivoID: 'ACT-03', KmInicio: 0, KmFin: 114.24, Valvulas: 'MLV-0101 a MLV-0103' }
+        ];
+
+        DB.activos = [
+            { ID: 'ACT-01', Nombre: 'GDN (Gasoducto del Noreste)', Longitud: 116.78 },
+            { ID: 'ACT-02', Nombre: 'DEN (Ductos del Norte)', Longitud: 452.46 },
+            { ID: 'ACT-03', Nombre: 'GDT (Gasoducto del Tamaulipas)', Longitud: 114.24 }
+        ];
+
+        DB.personalCampo = [
+            { ID: 'PC01', Nombre: 'José Ramírez', Puesto: 'Ayudante General', Cuadrilla: 'GDN', Activo: true },
+            { ID: 'PC02', Nombre: 'Francisco Torres', Puesto: 'Ayudante General', Cuadrilla: 'DEN', Activo: true },
+            { ID: 'PC03', Nombre: 'Daniel Morales', Puesto: 'Operador de Maquinaria', Cuadrilla: 'DEN', Activo: true },
+            { ID: 'PC04', Nombre: 'Alejandro Ruiz', Puesto: 'Chofer', Cuadrilla: 'GDT', Activo: true }
+        ];
+
+        DB.actividades = [
+            // Actividad de prueba real
+            { ID: 'ACT-001', Tipo: 'Patrullaje Vehicular', Tramo: 'TRAMO_GDN_01', Lider: 'U004', Fecha: todayStr(), Estado: 'Programada', KmProg: 116 }
+        ];
+
+        DB.planTrabajo = [
+            { ID: 'PT01', Tramo: 'TRAMO_GDN_01', TipoTrabajo: 'Desmonte Manual', Descripcion: 'Limpieza GDN', UnidadMedida: 'M2', CantidadProgramada: 5000, CantidadEjecutada: 0, Avance: 0, Estado: 'Pendiente', Fase: 'Fase 1' },
+            { ID: 'PT02', Tramo: 'TRAMO_DEN_01', TipoTrabajo: 'Patrullaje Vehicular', Descripcion: 'Recorrido DEN Norte', UnidadMedida: 'Km', CantidadProgramada: 184, CantidadEjecutada: 0, Avance: 0, Estado: 'Pendiente', Fase: 'Fase 2' }
+        ];
+
+        DB.catalogoActividades = [
+            { ID: 'CAT001', Nombre: 'Patrullaje Vehicular', Tipo: 'Operación' },
+            { ID: 'CAT002', Nombre: 'Desmonte Manual', Tipo: 'Mantenimiento' },
+            { ID: 'CAT003', Nombre: 'Señalización', Tipo: 'Mantenimiento' },
+            { ID: 'CAT004', Nombre: 'Renta Maquinaria', Tipo: 'Maquinaria' }
+        ];
+
+        DB.hallazgos = [];
+        localSave();
+        console.log('🌱 Datos semilla REALES cargados en localStorage');
+    }
+
+    function genId(prefix) { return prefix + '-' + Date.now().toString(36).toUpperCase(); }
+
+    // Motor local que simula las funciones del backend
+    const LocalEngine = {
+        login(pin) {
+            const user = DB.usuarios.find(u => String(u.PIN) === String(pin) && u.Activo);
+            if (!user) return { success: false, error: 'PIN incorrecto o usuario inactivo' };
+            return { success: true, usuario: { id: user.ID, nombre: user.Nombre, rol: user.Rol, iniciales: user.Iniciales, puesto: user.Puesto, activoAsignado: user.activoAsignado || 'TODOS' } };
+        },
+        getAllData() { return DB; },
+        crearActividad(p) {
+            const id = genId('ACT');
+            DB.actividades.push({ ID: id, Tipo: p.tipo, Tramo: p.tramoId, Lider: p.liderId, Fecha: p.fecha || todayStr(), Estado: 'Programada', KmProg: p.kmProg || 0 });
+            localSave(); return { success: true, id };
+        },
+        iniciarActividad(p) {
+            const a = DB.actividades.find(x => x.ID === p.id);
+            if (!a) return { success: false, error: 'Actividad no encontrada' };
+            a.Estado = 'En Curso'; a.HoraInicio = new Date().toLocaleTimeString();
+            localSave(); return { success: true };
+        },
+        completarActividad(p) {
+            const a = DB.actividades.find(x => x.ID === p.id);
+            if (!a) return { success: false, error: 'Actividad no encontrada' };
+            a.Estado = 'Completada'; a.HoraFin = new Date().toLocaleTimeString(); a.KmReal = p.kmRealizados || 0; a.Observaciones = p.observaciones || '';
+            localSave(); return { success: true };
+        },
+        guardarAST(p) {
+            const id = genId('AST');
+            DB.ast = DB.ast || [];
+            DB.ast.push({ ID: id, ActividadId: p.actividadId, UserId: p.userId, Rol: p.rol, Peligros: p.peligros, Riesgos: p.riesgos, Controles: p.controles, Fecha: todayStr() });
+            localSave(); return { success: true, id };
+        },
+        guardarHallazgo(p) {
+            const id = genId('HAL');
+            DB.hallazgos.push({ ID: id, Tipo: p.tipo || 'General', Tramo: p.tramo || '', Fecha: todayStr(), Estado: 'Abierto', Descripcion: p.descripcion || '', Reportado: p.userId });
+            localSave(); return { success: true, id };
+        },
+        guardarAsistencia(p) { localSave(); return { success: true }; },
+        guardarObservacion(p) { localSave(); return { success: true }; },
+        subirEvidencia(p) { return { success: true, url: 'local://evidencia/' + Date.now() }; },
+        registrarUsuarioApp(p) {
+            const id = genId('U');
+            DB.usuarios.push({ ID: id, Nombre: p.nombre, PIN: p.pin, Rol: p.rol, Iniciales: (p.nombre || 'XX').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase(), Activo: true, Puesto: p.puesto || '' });
+            localSave(); return { success: true, id };
+        },
+        registrarAmonestacion(p) {
+            const id = genId('AI');
+            DB.actosInseguros = DB.actosInseguros || [];
+            DB.actosInseguros.push({ ID: id, PersonalId: p.personalId, Tipo: p.tipo, Descripcion: p.desc, Severidad: p.severidad, Fecha: todayStr(), UserId: p.userId });
+            localSave(); return { success: true, id };
+        },
+        crearIncidente(p) {
+            const id = genId('INC');
+            DB.incidentes = DB.incidentes || [];
+            DB.incidentes.push({ ID: id, Tipo: p.tipo, Descripcion: p.descripcion, Fecha: todayStr(), Estado: 'Abierto', Afectados: p.afectados || 0 });
+            localSave(); return { success: true, id };
+        },
+        guardarInspeccionHerramienta(p) {
+            const id = genId('INS');
+            DB.inspecciones = DB.inspecciones || [];
+            DB.inspecciones.push({ ID: id, Tipo: 'Herramienta', Descripcion: p.descripcion, Estado: p.estado, ActividadId: p.actividadId, Fecha: todayStr(), UserId: p.userId });
+            localSave(); return { success: true, id };
+        },
+        actualizarAvancePlan(p) {
+            const item = DB.planTrabajo.find(x => x.ID === p.id);
+            if (!item) return { success: false, error: 'Concepto no encontrado' };
+            item.CantidadEjecutada = Number(p.cantidadEjecutada) || 0;
+            item.Avance = item.CantidadProgramada ? Math.round(item.CantidadEjecutada / item.CantidadProgramada * 100) : 0;
+            if (item.Avance >= 100) item.Estado = 'Completado';
+            localSave(); return { success: true };
+        },
+        generarReportePDF(p) {
+            return { success: false, error: 'Generación de PDF solo disponible en modo GAS (servidor).' };
+        },
+        checkOperability() { return { canOperate: true, blocks: [] }; }
+    };
+
+    function gasCall(funcName, payload, onSuccess, onError) {
+        if (IS_GAS) {
+            google.script.run
+                .withSuccessHandler(function (result) {
+                    if (result && result.success === false) {
+                        toast(result.error || 'Error del servidor', 'error');
+                        if (onError) onError(result);
+                    } else { if (onSuccess) onSuccess(result); }
+                })
+                .withFailureHandler(function (err) {
+                    toast('Error de conexión: ' + err.message, 'error');
+                    if (onError) onError(err);
+                })
+            [funcName](payload);
+        } else {
+            // MODO LOCAL: usar LocalEngine
+            console.log(`📦 LOCAL [${funcName}]`, payload);
+            try {
+                const fn = LocalEngine[funcName];
+                const result = fn ? fn(payload) : { success: true, id: genId('GEN') };
+                if (result && result.success === false) {
+                    toast(result.error || 'Error local', 'error');
+                    if (onError) onError(result);
+                } else {
+                    if (onSuccess) onSuccess(result);
+                }
+            } catch (e) {
+                console.error('LocalEngine error:', e);
+                if (onSuccess) onSuccess({ success: true, id: genId('ERR') });
+            }
+        }
+    }
+
+    // --- NAV ICONS ---
+    const NAV_ICONS = {
+        grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>',
+        list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1.5" fill="currentColor"/><circle cx="3" cy="12" r="1.5" fill="currentColor"/><circle cx="3" cy="18" r="1.5" fill="currentColor"/></svg>',
+        layers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
+        alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>',
+        shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+        users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
+        file: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+        edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+        play: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
+        stop: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>',
+    };
+
+    // --- APP ---
+    const App = {
+        currentUser: null,
+        currentActivo: 'TODOS',
+        currentPage: null,
+
+        init() {
+            this.setupPinInputs();
+            const btnLogin = $('btnLogin');
+            if (btnLogin) btnLogin.onclick = () => this.attemptLogin();
+
+            const btnHam = $('btnHamburger');
+            if (btnHam) btnHam.onclick = () => { $('sidebar').classList.add('open'); $('sidebarOverlay').classList.add('active'); };
+            const overlay = $('sidebarOverlay');
+            if (overlay) overlay.onclick = () => this.closeSidebar();
+
+            const dateLabel = $('topbarDate');
+            if (dateLabel) dateLabel.textContent = new Date().toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+
+            if (!IS_GAS) {
+                // Cargar datos de localStorage o sembrar datos iniciales
+                if (!localLoad()) localSeed();
+                console.log('📱 MODO LOCAL — PINs: 1234 (Admin), 2222 (Supervisor), 3333 (Segurista), 4444 (Líder)');
+            }
+        },
+
+        setupPinInputs() {
+            const pins = document.querySelectorAll('.pin-digit');
+            pins.forEach((input, i) => {
+                input.oninput = () => { if (input.value && i < 3) pins[i + 1].focus(); if (i === 3 && input.value) this.attemptLogin(); };
+                input.onkeydown = (e) => { if (e.key === 'Backspace' && !input.value && i > 0) pins[i - 1].focus(); };
+            });
+        },
+
+        attemptLogin() {
+            const pin = Array.from(document.querySelectorAll('.pin-digit')).map(i => i.value).join('');
+            if (pin.length < 4) return;
+            console.log('Attempting login with PIN:', pin);
+            toast('Verificando PIN...', 'info');
+
+            const btn = $('btnLogin');
+            if (btn) { btn.disabled = true; btn.innerText = 'Verificando...'; }
+
+            gasCall('login', pin, (result) => {
+                console.log('Login result:', result);
+                if (result.success === false) {
+                    if (btn) { btn.disabled = false; btn.innerText = 'Ingresar'; }
+                    $('loginError').textContent = result.error || 'PIN incorrecto';
+                    toast('Error: ' + (result.error || 'PIN incorrecto'), 'error');
+                    document.querySelectorAll('.pin-digit').forEach(i => i.value = '');
+                    document.querySelector('.pin-digit').focus();
+                    return;
+                }
+                this.currentUser = result.usuario;
+                this.currentActivo = this.currentUser.activoAsignado || 'TODOS';
+                this.enterApp();
+            }, (err) => {
+                console.error('Login GAS error:', err);
+                toast('Error de sistema: ' + err.message, 'error');
+                if (btn) { btn.disabled = false; btn.innerText = 'Ingresar'; }
+                $('loginError').textContent = (err && err.error) || 'Error de conexión';
+                document.querySelectorAll('.pin-digit').forEach(i => i.value = '');
+                document.querySelector('.pin-digit').focus();
+            });
+        },
+
+        enterApp() {
+            $('screen-login').classList.add('hidden');
+            $('app-shell').style.display = 'flex';
+            $('userAvatar').textContent = this.currentUser.iniciales;
+            $('userName').textContent = this.currentUser.nombre;
+
+            const ROLE_BADGES = { 'ADMIN': { cls: 'badge badge-green', txt: '🛡 ADMIN' }, 'SUPERVISOR': { cls: 'badge badge-purple', txt: '📋 SUPERVISOR' }, 'SEGURISTA': { cls: 'badge badge-orange', txt: '🔍 SEGURISTA' }, 'LIDER': { cls: 'badge badge-blue', txt: '👷 LÍDER' } };
+            const rb = ROLE_BADGES[this.currentUser.rol] || { cls: 'badge badge-blue', txt: this.currentUser.rol };
+            const roleBadge = $('topbarRoleBadge');
+            if (roleBadge) { roleBadge.style.display = 'inline-flex'; roleBadge.className = rb.cls; roleBadge.textContent = rb.txt; }
+
+            this.refreshData(() => {
+                this.buildNav();
+                this.navigate(this.currentUser.rol === 'LIDER' ? 'mis-actividades' : 'control-desk');
+            });
+        },
+
+        refreshData(callback) {
+            if (!IS_GAS) {
+                localLoad(); // Recargar desde localStorage
+                if (callback) callback();
+                return;
+            }
+            toast('Cargando datos...', 'info');
+            google.script.run.withSuccessHandler(data => {
+                Object.assign(DB, data);
+                toast('Datos actualizados');
+                if (callback) callback();
+            }).getAllData(this.currentActivo);
+        },
+
+        buildNav() {
+            const nav = $('sidebarNav');
+            const level = { 'ADMIN': 4, 'SUPERVISOR': 3, 'SEGURISTA': 2, 'LIDER': 1 }[this.currentUser.rol] || 1;
+            const sections = [
+                {
+                    title: 'Principal', items: [
+                        { id: 'dashboard', icon: 'grid', label: 'Dashboard', min: 2 },
+                        { id: 'control-desk', icon: 'grid', label: 'Control Desk', min: 2 },
+                        { id: 'plan-trabajo', icon: 'grid', label: 'Plan de Trabajo', min: 3 },
+                        { id: 'actividades', icon: 'list', label: 'Actividades', min: 3 },
+                        { id: 'produccion', icon: 'layers', label: 'Producción', min: 3 },
+                    ]
+                },
+                {
+                    title: 'Operación', items: [
+                        { id: 'mis-actividades', icon: 'list', label: 'Mi Jornada', min: 1, max: 1 },
+                        { id: 'iniciar-jornada', icon: 'play', label: 'Iniciar Jornada', min: 1, max: 1 },
+                        { id: 'cierre-jornada', icon: 'stop', label: 'Cierre Jornada', min: 1, max: 1 },
+                        { id: 'ast-lider', icon: 'edit', label: 'AST Digital', min: 1, max: 1 },
+                    ]
+                },
+                {
+                    title: 'Seguridad', items: [
+                        { id: 'inspeccion-herramientas', icon: 'layers', label: 'Inspecciones', min: 2, max: 3 },
+                        { id: 'actos-inseguros', icon: 'alert', label: 'Actos Inseguros', min: 2, max: 3 },
+                        { id: 'accidentes', icon: 'shield', label: 'Accidentes', min: 2, max: 3 },
+                        { id: 'hallazgos', icon: 'alert', label: 'Hallazgos', min: 2 },
+                    ]
+                },
+                {
+                    title: 'Administración', items: [
+                        { id: 'alta-personal', icon: 'users', label: 'Alta Personal', min: 3 },
+                        { id: 'reportes', icon: 'file', label: 'Reportes', min: 3 },
+                    ]
+                },
+                {
+                    title: 'Ayuda', items: [
+                        { id: 'ayuda', icon: 'file', label: 'Guía', min: 1 },
+                    ]
+                },
+            ];
+
+            nav.innerHTML = sections.filter(s => s.items.some(i => level >= i.min)).map(s => `
+                <div class="nav-section"><div class="nav-section-title">${s.title}</div>
+                ${s.items.filter(i => level >= i.min && (!i.max || level <= i.max)).map(i => `
+                    <div class="nav-item ${this.currentPage === i.id ? 'active' : ''}" onclick="App.navigate('${i.id}')">
+                        ${NAV_ICONS[i.icon]} <span>${i.label}</span>
+                    </div>
+                `).join('')}</div>
+            `).join('');
+        },
+
+        navigate(page) {
+            this.currentPage = page;
+            $('topbarTitle').textContent = page.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            this.buildNav();
+            if (Pages[page]) Pages[page]();
+            else html('pageContent', `<div class="empty-state">Página "${page}" en construcción</div>`);
+            if (window.innerWidth < 1024) this.closeSidebar();
+        },
+
+        closeSidebar() { $('sidebar').classList.remove('open'); $('sidebarOverlay').classList.remove('active'); },
+        logout() { location.reload(); }
+    };
+
+    const Pages = {};
+</script>

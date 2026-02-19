@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: 'Helvetica', sans-serif;
+            font-size: 10px;
+            color: #333;
+        }
+
+        .header {
+            width: 100%;
+            border-bottom: 2px solid #002f6c;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .logo {
+            width: 120px;
+            float: left;
+        }
+
+        .title {
+            text-align: right;
+            float: right;
+        }
+
+        .title h1 {
+            margin: 0;
+            font-size: 16px;
+            color: #002f6c;
+        }
+
+        .meta {
+            clear: both;
+            margin-top: 10px;
+            font-size: 9px;
+            color: #666;
+            text-align: right;
+        }
+
+        .section {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            background: #f4f4f4;
+            padding: 5px;
+            margin: -10px -10px 10px -10px;
+            border-bottom: 1px solid #ddd;
+            color: #002f6c;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9px;
+        }
+
+        th,
+        td {
+            border: 1px solid #eee;
+            padding: 6px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+
+        .risk-high {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .risk-med {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .signatures {
+            margin-top: 30px;
+            width: 100%;
+        }
+
+        .sig-box {
+            width: 30%;
+            display: inline-block;
+            border-top: 1px solid #333;
+            margin-right: 3%;
+            padding-top: 5px;
+            text-align: center;
+            font-size: 9px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <div class="logo">
+            <img src="<?= meta.logoBase64 ?>" style="width:100px;">
+        </div>
+        <div class="title">
+            <h1>Análisis de Seguridad en el Trabajo (AST)</h1>
+            <div>F-GC-OP-03 · Rev. 02</div>
+        </div>
+        <div class="meta">
+            Folio: <strong>
+                <?= meta.folio ?>
+            </strong><br>
+            Fecha:
+            <?= data.Fecha ?><br>
+            Generado por:
+            <?= meta.generadoPor ?>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Datos Generales</div>
+        <table>
+            <tr>
+                <td width="20%"><strong>Actividad:</strong></td>
+                <td>
+                    <?= data.Actividad ?>
+                </td>
+                <td width="20%"><strong>Ubicación/Tramo:</strong></td>
+                <td>
+                    <?= data.Tramo || 'General' ?>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Líder a Cargo:</strong></td>
+                <td>
+                    <?= data.Lider ?>
+                </td>
+                <td><strong>Cuadrilla:</strong></td>
+                <td>
+                    <?= data.Cuadrilla || 'Operación General' ?>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Análisis de Riesgos y Controles</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Paso de la Tarea</th>
+                    <th>Peligro Identificado</th>
+                    <th>Riesgo</th>
+                    <th>Medida de Control</th>
+                </tr>
+            </thead>
+            <tbody>
+                <? for (var i = 0; i < data.Peligros.length; i++) { ?>
+                <tr>
+                    <td>Etapa
+                        <?= i+1 ?>
+                    </td>
+                    <td>
+                        <?= data.Peligros[i] ?>
+                    </td>
+                    <td class="<?= data.Riesgos[i] === 'Alto' ? 'risk-high' : '' ?>">
+                        <?= data.Riesgos[i] ?>
+                    </td>
+                    <td>
+                        <?= data.Controles[i] ?>
+                    </td>
+                </tr>
+                <? } ?>
+                <? if (!data.Peligros || data.Peligros.length === 0) { ?>
+                <tr>
+                    <td colspan="4" style="text-align:center; color:#999;">Sin peligros registrados específicamente.
+                        Aplicar controles estándar.</td>
+                </tr>
+                <? } ?>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Equipo de Protección Personal (EPP) Requerido</div>
+        <div style="font-size:9px; color:#555;">
+            [X] Casco [X] Chaleco [X] Botas de Seguridad [X] Lentes
+            <?= data.RequiereAltura ? '[X] Arnés/Línea de Vida' : '[ ] Arnés/Línea de Vida' ?>
+            <?= data.RequiereEspacioConfinado ? '[X] Medidor Gases' : '[ ] Medidor Gases' ?>
+        </div>
+    </div>
+
+    <div class="signatures">
+        <div class="sig-box">
+            <strong>
+                <?= data.Lider ?>
+            </strong><br>Líder de Cuadrilla
+        </div>
+        <div class="sig-box">
+            <strong>
+                <?= meta.generadoPor ?>
+            </strong><br>Seguridad HSE / Supervisor
+        </div>
+        <div class="sig-box">
+            <strong>Visto Bueno</strong><br>Gerencia / Cliente
+        </div>
+    </div>
+
+    <div style="margin-top:20px; font-size:8px; color:#999; text-align:center;">
+        Documento generado electrónicamente por el Sistema DmV Control. La validez de este documento reside en la
+        trazabilidad del folio único.
+    </div>
+
+</body>
+
+</html>

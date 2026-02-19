@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DmV Control v3.0 · GENCO · SASISOPA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <?!= include('Styles'); ?>
+</head>
+
+<body>
+    <div id="toastContainer"></div>
+
+    <!-- Modales -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modalContent"></div>
+    </div>
+
+    <!-- Pantalla de Login -->
+    <div id="screen-login" class="screen">
+        <div class="login-banner">
+            <h1>DmV Control</h1>
+            <p>Infraestructura y Mantenimiento · SASISOPA</p>
+        </div>
+        <div class="login-container">
+            <div class="login-box">
+                <h2>Bienvenido</h2>
+                <p>Ingrese su PIN de 4 dígitos</p>
+                <div class="pin-grid">
+                    <input type="password" maxlength="1" class="pin-digit" inputmode="numeric" autofocus>
+                    <input type="password" maxlength="1" class="pin-digit" inputmode="numeric">
+                    <input type="password" maxlength="1" class="pin-digit" inputmode="numeric">
+                    <input type="password" maxlength="1" class="pin-digit" inputmode="numeric">
+                </div>
+                <div id="loginError" class="error-msg"></div>
+                <button class="btn btn-primary btn-block" id="btnLogin" style="margin-top:16px;">Ingresar</button>
+                <p class="text-sm text-muted mt-2">GENCO · Dev Sergio A Jiménez</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Shell -->
+    <div id="app-shell" style="display:none;">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">DMV <span>Control</span></div>
+            </div>
+            <nav class="sidebar-nav" id="sidebarNav"></nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar"></div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">Cargando...</div>
+                        <div class="user-status">En línea</div>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <span id="topbarRoleBadge" style="display:none"></span>
+                </div>
+                <button class="btn-logout" onclick="App.logout()">Cerrar Sesión</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <button class="btn-hamburger" id="btnHamburger">☰</button>
+                    <h2 class="topbar-title" id="topbarTitle">Dashboard</h2>
+                </div>
+                <div class="topbar-date" id="topbarDate"></div>
+            </header>
+            <div class="page-content" id="pageContent"></div>
+        </main>
+
+        <nav class="bottom-nav" id="bottomNav"></nav>
+    </div>
+
+    <?!= include('AppCore'); ?>
+    <?!= include('PagesPrincipal'); ?>
+    <?!= include('PagesOperacion'); ?>
+    <?!= include('PagesSeguridad'); ?>
+
+    <script>
+        window.onload = () => App.init();
+    </script>
+</body>
+
+</html>
